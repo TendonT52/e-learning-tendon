@@ -1,6 +1,7 @@
 package application_test
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ func TestSignUp(t *testing.T) {
 	jwtDB := &mock.MockJwtDB{}
 	config := core.JwtConfig{
 		AppName:              "test app name",
-		SigningKey:           "7D6E",
+		AccessSecret:         "7D6E",
 		AccesstokenDuration:  time.Minute,
 		RefreshtokenDuration: time.Minute,
 	}
@@ -35,5 +36,38 @@ func TestSignUp(t *testing.T) {
 	}
 	if token.Access == "" {
 		t.Error("invalid access token")
+	}
+}
+
+func TestSignIn(t *testing.T) {
+	userDB := &mock.MockUserDB{GetByEmail: errs.ErrNotFound}
+	jwtDB := &mock.MockJwtDB{}
+	config := core.JwtConfig{
+		AppName:              "test app name",
+		AccessSecret:         "7D6E",
+		AccesstokenDuration:  time.Minute,
+		RefreshtokenDuration: time.Minute,
+	}
+	application.NewUserService(userDB)
+	application.NewJwtService(jwtDB, config)
+	userCreate, _, err := application.UserServiceInstance.SignUp(
+		"mock First Name",
+		"testLastName",
+		"testEmail",
+		"testpassword",
+	)
+	if err != nil {
+		t.Error("Error while sign up")
+	}
+	userDB = &mock.MockUserDB{}
+	application.NewUserService(userDB)
+	user, _, err := application.UserServiceInstance.SignIn("testEmail", "testpassword")
+	if err != nil {
+		t.Error("Error while sign in user")
+		return
+	}
+	if !reflect.DeepEqual(userCreate, user) {
+		t.Error("user should be equal")
+		return
 	}
 }

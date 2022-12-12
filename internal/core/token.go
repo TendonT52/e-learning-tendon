@@ -2,7 +2,6 @@ package core
 
 import (
 	"time"
-
 )
 
 type Token struct {
@@ -12,7 +11,8 @@ type Token struct {
 
 type JwtConfig struct {
 	AppName              string
-	SigningKey           string
+	AccessSecret         string
+	RefreshSecret         string
 	AccesstokenDuration  time.Duration
 	RefreshtokenDuration time.Duration
 }

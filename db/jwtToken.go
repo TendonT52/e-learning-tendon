@@ -28,7 +28,7 @@ func (jw *jwtDB) InsertJwtToken(exp time.Time) (string, error) {
 		Id:  primitive.NewObjectID(),
 		Exp: primitive.NewDateTimeFromTime(exp),
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), createTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), config.CreateTimeOut)
 	defer cancel()
 	result, err := jw.collection.InsertOne(ctx, doc)
 	if err != nil {
@@ -43,7 +43,7 @@ func (jw *jwtDB) CheckJwtToken(hexId string) error {
 		return errs.ErrInvalidToken.From(err)
 	}
 	filter := bson.D{{Key: "_id", Value: id}}
-	ctx, cancel := context.WithTimeout(context.Background(), findTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
 	defer cancel()
 	doc := jwtDoc{}
 	err = jw.collection.FindOne(ctx, filter).Decode(&doc)
@@ -62,7 +62,7 @@ func (jw *jwtDB) DeleteJwtToken(hexId string) error {
 		return errs.ErrInvalidToken.From(err)
 	}
 	filter := bson.D{{Key: "_id", Value: id}}
-	ctx, cancel := context.WithTimeout(context.Background(), deleteTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeout)
 	defer cancel()
 	result, err := jw.collection.DeleteOne(ctx, filter)
 	if err != nil {
@@ -76,7 +76,7 @@ func (jw *jwtDB) DeleteJwtToken(hexId string) error {
 
 func (jw *jwtDB) CleanUp() int {
 	filter := bson.D{{}}
-	ctx, cancel := context.WithTimeout(context.Background(), findTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
 	defer cancel()
 	result, err := jw.collection.DeleteMany(ctx, filter)
 	if err != nil {

@@ -25,6 +25,22 @@ func NewJwtService(jwtDB repos.JwtDB, config core.JwtConfig) {
 	}
 }
 
+func (jw *jwtService) createToken(userID string) (core.Token, error) {
+	accessToken, err := JwtServiceInstance.generateAccessToken(userID)
+	if err != nil {
+		return core.Token{}, err
+	}
+	refreshToken, err := JwtServiceInstance.generateRefreshToken(userID)
+	if err != nil {
+		return core.Token{}, err
+	}
+	token := core.Token{
+		Access:  accessToken,
+		Refresh: refreshToken,
+	}
+	return token, nil
+}
+
 func (js *jwtService) generateAccessToken(userID string) (string, error) {
 	exp := time.Now().Add(js.config.AccesstokenDuration)
 	claim := jwt.RegisteredClaims{
@@ -43,7 +59,7 @@ func (js *jwtService) generateAccessToken(userID string) (string, error) {
 	}
 	claim.ID = id
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	ss, err := token.SignedString([]byte(js.config.SigningKey))
+	ss, err := token.SignedString([]byte(js.config.AccessSecret))
 	if err != nil {
 		return id, errs.NewHttpError(
 			http.StatusInternalServerError,
@@ -71,7 +87,7 @@ func (js *jwtService) generateRefreshToken(userID string) (string, error) {
 	}
 	claim.ID = id
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	ss, err := token.SignedString([]byte(js.config.SigningKey))
+	ss, err := token.SignedString([]byte(js.config.AccessSecret))
 	if err != nil {
 		return id, errs.NewHttpError(
 			http.StatusInternalServerError,
@@ -87,7 +103,7 @@ func (js *jwtService) validateToken(encodedToken string, userId string) (jwt.Reg
 		encodedToken,
 		&claim,
 		func(token *jwt.Token) (interface{}, error) {
-			return []byte(js.config.SigningKey), nil
+			return []byte(js.config.AccessSecret), nil
 		},
 	)
 	if err != nil {

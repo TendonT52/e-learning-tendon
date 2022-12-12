@@ -39,44 +39,31 @@ func (us *UserService) SignUp(firstName, lastName, email, password string) (core
 			"error while add user to database",
 		)
 	}
-	accessToken, err := JwtServiceInstance.generateAccessToken(user.ID)
+	token, err := JwtServiceInstance.createToken(user.ID)
 	if err != nil {
 		return core.User{}, core.Token{}, err
 	}
-	refreshToken, err := JwtServiceInstance.generateRefreshToken(user.ID)
-	if err != nil {
-		return core.User{}, core.Token{}, err
-	}
-	token := core.Token{
-		Access:  accessToken,
-		Refresh: refreshToken,
-	}
-	return user, token, err
+	return user, token, nil
 }
 
-// func (us UserService) checkEmailPassword(req core.SignIn) (core.UserResponse, error) {
-// 	user, err := us.userDB.GetUserByEmail(req.Email)
-// 	if err != nil {
-// 		if errors.Is(err, &errs.ErrNotFound) {
-// 			return core.UserResponse{},
-// 				errs.NewHttpError(
-// 					http.StatusBadRequest,
-// 					"incorrect email or password",
-// 				)
-// 		}
-// 	}
-// 	correct := auth.ValidatePassword(req.Password, user.HashPassword)
-// 	if !correct {
-// 		return core.UserResponse{},
-// 			errs.NewHttpError(
-// 				http.StatusForbidden,
-// 				"incorrect email or password",
-// 			)
-// 	}
-// 	return core.UserResponse{
-// 		Id:        user.Id,
-// 		FirstName: user.FirstName,
-// 		LastName:  user.LastName,
-// 		Email:     user.Email,
-// 	}, nil
-// }
+func (us *UserService) SignIn(email, password string) (core.User, core.Token, error) {
+	user, err := us.userDB.GetUserByEmail(email)
+	if err != nil {
+		return core.User{}, core.Token{}, errs.NewHttpError(
+			http.StatusConflict,
+			"wrong email or password",
+		)
+	}
+	ok := auth.ValidatePassword(password, user.HashPassword)
+	if !ok {
+		return core.User{}, core.Token{}, errs.NewHttpError(
+			http.StatusConflict,
+			"wrong email or password",
+		)
+	}
+	token, err := JwtServiceInstance.createToken(user.ID)
+	if err != nil {
+		return core.User{}, core.Token{}, err
+	}
+	return user, token, nil
+}

@@ -14,7 +14,7 @@ import (
 func TestGenerateAccessTokenJwt(t *testing.T) {
 	config := core.JwtConfig{
 		AppName:              "test app name",
-		SigningKey:           "7D6E",
+		AccessSecret:         "7D6E",
 		AccesstokenDuration:  time.Minute,
 		RefreshtokenDuration: time.Minute,
 	}
@@ -30,7 +30,7 @@ func TestGenerateAccessTokenJwt(t *testing.T) {
 func TestGenerateAccessTokenJwtErrDatabase(t *testing.T) {
 	config := core.JwtConfig{
 		AppName:              "test app name",
-		SigningKey:           "7D6E",
+		AccessSecret:         "7D6E",
 		AccesstokenDuration:  time.Minute,
 		RefreshtokenDuration: time.Minute,
 	}
@@ -53,7 +53,7 @@ func TestGenerateAccessTokenJwtErrDatabase(t *testing.T) {
 func TestGenerateRefreshTokenJwt(t *testing.T) {
 	config := core.JwtConfig{
 		AppName:              "test app name",
-		SigningKey:           "7D6E",
+		AccessSecret:         "7D6E",
 		AccesstokenDuration:  time.Minute,
 		RefreshtokenDuration: time.Minute,
 	}
@@ -69,7 +69,7 @@ func TestGenerateRefreshTokenJwt(t *testing.T) {
 func TestGenerateRefreshTokenJwtErrDatabase(t *testing.T) {
 	config := core.JwtConfig{
 		AppName:              "test app name",
-		SigningKey:           "7D6E",
+		AccessSecret:         "7D6E",
 		AccesstokenDuration:  time.Minute,
 		RefreshtokenDuration: time.Minute,
 	}
@@ -87,7 +87,7 @@ func TestGenerateRefreshTokenJwtErrDatabase(t *testing.T) {
 func TestValidateToken(t *testing.T) {
 	config := core.JwtConfig{
 		AppName:              "test app name",
-		SigningKey:           "7D6E",
+		AccessSecret:         "7D6E",
 		AccesstokenDuration:  time.Minute,
 		RefreshtokenDuration: time.Minute,
 	}
@@ -109,7 +109,7 @@ func TestValidateToken(t *testing.T) {
 func TestValidateTokenErrTokenExpired(t *testing.T) {
 	config := core.JwtConfig{
 		AppName:              "test app name",
-		SigningKey:           "7D6E",
+		AccessSecret:         "7D6E",
 		AccesstokenDuration:  0,
 		RefreshtokenDuration: 0,
 	}
@@ -131,7 +131,7 @@ func TestValidateTokenErrTokenExpired(t *testing.T) {
 func TestValidateTokenErrNotFound(t *testing.T) {
 	config := core.JwtConfig{
 		AppName:              "test app name",
-		SigningKey:           "7D6E",
+		AccessSecret:         "7D6E",
 		AccesstokenDuration:  time.Minute,
 		RefreshtokenDuration: time.Minute,
 	}

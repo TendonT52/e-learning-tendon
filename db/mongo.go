@@ -12,12 +12,17 @@ import (
 var client *mongo.Client
 var db *mongo.Database
 
-var createTimeOut time.Duration = time.Second * 5
-var findTimeout time.Duration = time.Second * 5
-var updateTimeout time.Duration = time.Second * 5
-var deleteTimeout time.Duration = time.Second * 5
+var config MongoConfig
 
-func NewClient(connection string) {
+type MongoConfig struct {
+	CreateTimeOut time.Duration
+	FindTimeout   time.Duration
+	UpdateTimeout time.Duration
+	DeleteTimeout time.Duration
+}
+
+func NewClient(connection string, mongoconfig MongoConfig) {
+	config = mongoconfig
 	log.Println("Connecting to mongo...")
 	var err error
 	client, err = mongo.Connect(context.Background(), options.Client().ApplyURI(connection))
@@ -51,5 +56,3 @@ func pingMongo() error {
 	err := client.Ping(ctx, nil)
 	return err
 }
-
-

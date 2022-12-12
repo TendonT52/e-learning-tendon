@@ -34,7 +34,7 @@ func (u *userDB) InsertUser(firstName, lastName, email, hashPassword, role strin
 		Role:         role,
 		UpdatedAt:    primitive.NewDateTimeFromTime(time.Now()),
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), createTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), config.CreateTimeOut)
 	defer cancel()
 	_, err := u.collection.InsertOne(ctx, doc)
 	if err != nil {
@@ -54,7 +54,7 @@ func (u *userDB) InsertUser(firstName, lastName, email, hashPassword, role strin
 
 func (u *userDB) GetUserByEmail(email string) (core.User, error) {
 	filter := bson.D{{Key: "email", Value: email}}
-	ctx, cancel := context.WithTimeout(context.Background(), findTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
 	defer cancel()
 	doc := userDoc{}
 	err := u.collection.FindOne(ctx, filter).Decode(&doc)
@@ -82,7 +82,7 @@ func (u *userDB) GetUserById(id string) (core.User, error) {
 		return core.User{}, errs.ErrWrongFormat.From(err)
 	}
 	filter := bson.D{{Key: "_id", Value: objID}}
-	ctx, cancel := context.WithTimeout(context.Background(), findTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
 	defer cancel()
 	doc := userDoc{}
 	err = u.collection.FindOne(ctx, filter).Decode(&doc)
@@ -106,7 +106,7 @@ func (u *userDB) GetUserById(id string) (core.User, error) {
 
 func (u *userDB) CleanUp() int {
 	filter := bson.D{{}}
-	ctx, cancel := context.WithTimeout(context.Background(), findTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
 	defer cancel()
 	result, err := u.collection.DeleteMany(ctx, filter)
 	if err != nil {
