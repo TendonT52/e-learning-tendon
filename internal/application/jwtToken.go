@@ -25,6 +25,10 @@ func NewJwtService(jwtDB repos.JwtDB, config core.JwtConfig) {
 	}
 }
 
+func (jw *jwtService) GetCookieDuration() time.Duration {
+	return jw.config.AccesstokenDuration
+}
+
 func (jw *jwtService) createToken(userID string) (core.Token, error) {
 	accessToken, err := JwtServiceInstance.generateAccessToken(userID)
 	if err != nil {
@@ -97,7 +101,7 @@ func (js *jwtService) generateRefreshToken(userID string) (string, error) {
 	return ss, nil
 }
 
-func (js *jwtService) validateToken(encodedToken string, userId string) (jwt.RegisteredClaims, error) {
+func (js *jwtService) ValidateToken(encodedToken string) (jwt.RegisteredClaims, error) {
 	claim := jwt.RegisteredClaims{}
 	_, err := jwt.ParseWithClaims(
 		encodedToken,
@@ -119,12 +123,6 @@ func (js *jwtService) validateToken(encodedToken string, userId string) (jwt.Reg
 			)
 		}
 	}
-	if claim.Subject != userId {
-		return claim, errs.NewHttpError(
-			http.StatusConflict,
-			"token not valid",
-		)
-	}
 	err = js.jwtDB.CheckJwtToken(claim.ID)
 	if err != nil {
 		if errors.Is(err, errs.ErrNotFound) {
@@ -140,4 +138,26 @@ func (js *jwtService) validateToken(encodedToken string, userId string) (jwt.Reg
 		}
 	}
 	return claim, nil
+}
+
+func (js *jwtService) revokeToken(encodedToken string) error {
+	claim, err := js.ValidateToken(encodedToken)
+	if err != nil {
+		return err
+	}
+	err = js.jwtDB.DeleteJwtToken(claim.ID)
+	if err != nil {
+		if errors.Is(err, errs.ErrNotFound) {
+			return errs.NewHttpError(
+				http.StatusConflict,
+				"token already revoke",
+			)
+		} else {
+			return errs.NewHttpError(
+				http.StatusInternalServerError,
+				"can't find token in database",
+			)
+		}
+	}
+	return nil
 }

@@ -18,4 +18,5 @@ type User struct {
 	HashPassword string
 	Role         string
 	UpdatedAt    time.Time
+	EnrollCurriculum []string
 }

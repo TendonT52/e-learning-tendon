@@ -19,9 +19,9 @@ const (
 )
 
 type Node struct {
-	NodeId    string
+	ID        string
 	Type      string
 	Data      string
-	Priority  string
+	CreateBy  string
 	UpdatedAt time.Time
 }

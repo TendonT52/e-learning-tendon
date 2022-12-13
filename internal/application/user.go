@@ -67,3 +67,15 @@ func (us *UserService) SignIn(email, password string) (core.User, core.Token, er
 	}
 	return user, token, nil
 }
+
+func (us *UserService) SignOut(accessToken, refreshToken string) error {
+	err := JwtServiceInstance.revokeToken(refreshToken)
+	if err != nil {
+		return err
+	}
+	err = JwtServiceInstance.revokeToken(accessToken)
+	if err != nil {
+		return err
+	}
+	return nil
+}

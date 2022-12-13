@@ -80,7 +80,7 @@ func (jw *jwtDB) CleanUp() int {
 	defer cancel()
 	result, err := jw.collection.DeleteMany(ctx, filter)
 	if err != nil {
-		log.Fatalf("Error while clean up user collection, %v", err)
+		log.Fatalf("Error while clean up jwt collection, %v", err)
 	}
 	return int(result.DeletedCount)
 }

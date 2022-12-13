@@ -3,7 +3,7 @@ package repos
 import "time"
 
 type JwtDB interface {
-	InsertJwtToken(time.Time) (string, error)
-	CheckJwtToken(string) error
-	DeleteJwtToken(string) error
+	InsertJwtToken(exp time.Time) (string, error)
+	CheckJwtToken(hexId string) error
+	DeleteJwtToken(hexId string) error
 }

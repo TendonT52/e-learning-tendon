@@ -26,13 +26,14 @@ func NewUserDB(userCollectionName string) {
 
 func (u *userDB) InsertUser(firstName, lastName, email, hashPassword, role string) (core.User, error) {
 	doc := userDoc{
-		Id:           primitive.NewObjectID(),
-		FirstName:    firstName,
-		LastName:     lastName,
-		Email:        email,
-		HashPassword: hashPassword,
-		Role:         role,
-		UpdatedAt:    primitive.NewDateTimeFromTime(time.Now()),
+		Id:               primitive.NewObjectID(),
+		FirstName:        firstName,
+		LastName:         lastName,
+		Email:            email,
+		HashPassword:     hashPassword,
+		Role:             role,
+		UpdatedAt:        primitive.NewDateTimeFromTime(time.Now()),
+		EnrollCurriculum: make([]primitive.ObjectID, 0),
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), config.CreateTimeOut)
 	defer cancel()
@@ -40,14 +41,18 @@ func (u *userDB) InsertUser(firstName, lastName, email, hashPassword, role strin
 	if err != nil {
 		return core.User{}, errs.ErrDatabase.From(err)
 	}
+
+	enrollHex := ArrayObjectIdToArrayString(doc.EnrollCurriculum)
+
 	user := core.User{
-		ID:           doc.Id.Hex(),
-		FirstName:    firstName,
-		LastName:     lastName,
-		Email:        email,
-		HashPassword: hashPassword,
-		Role:         role,
-		UpdatedAt:    doc.UpdatedAt.Time(),
+		ID:               doc.Id.Hex(),
+		FirstName:        firstName,
+		LastName:         lastName,
+		Email:            email,
+		HashPassword:     hashPassword,
+		Role:             role,
+		UpdatedAt:        doc.UpdatedAt.Time(),
+		EnrollCurriculum: enrollHex,
 	}
 	return user, nil
 }
@@ -64,14 +69,18 @@ func (u *userDB) GetUserByEmail(email string) (core.User, error) {
 		}
 		return core.User{}, errs.ErrDatabase.From(err)
 	}
+
+	enrollHex := ArrayObjectIdToArrayString(doc.EnrollCurriculum)
+
 	user := core.User{
-		ID:           doc.Id.Hex(),
-		FirstName:    doc.FirstName,
-		LastName:     doc.LastName,
-		Email:        doc.Email,
-		HashPassword: doc.HashPassword,
-		Role:         doc.Role,
-		UpdatedAt:    doc.UpdatedAt.Time(),
+		ID:               doc.Id.Hex(),
+		FirstName:        doc.FirstName,
+		LastName:         doc.LastName,
+		Email:            doc.Email,
+		HashPassword:     doc.HashPassword,
+		Role:             doc.Role,
+		UpdatedAt:        doc.UpdatedAt.Time(),
+		EnrollCurriculum: enrollHex,
 	}
 	return user, nil
 }
@@ -92,14 +101,16 @@ func (u *userDB) GetUserById(id string) (core.User, error) {
 		}
 		return core.User{}, errs.ErrDatabase.From(err)
 	}
+	enrollHex := ArrayObjectIdToArrayString(doc.EnrollCurriculum)
 	user := core.User{
-		ID:           doc.Id.Hex(),
-		FirstName:    doc.FirstName,
-		LastName:     doc.LastName,
-		Email:        doc.Email,
-		HashPassword: doc.HashPassword,
-		Role:         doc.Role,
-		UpdatedAt:    doc.UpdatedAt.Time(),
+		ID:               doc.Id.Hex(),
+		FirstName:        doc.FirstName,
+		LastName:         doc.LastName,
+		Email:            doc.Email,
+		HashPassword:     doc.HashPassword,
+		Role:             doc.Role,
+		UpdatedAt:        doc.UpdatedAt.Time(),
+		EnrollCurriculum: enrollHex,
 	}
 	return user, nil
 }

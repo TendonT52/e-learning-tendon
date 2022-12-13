@@ -5,13 +5,14 @@ import (
 	"log"
 	"time"
 
+	"github.com/TendonT52/e-learning-tendon/internal/pkg/errs"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var client *mongo.Client
 var db *mongo.Database
-
 var config MongoConfig
 
 type MongoConfig struct {
@@ -55,4 +56,24 @@ func pingMongo() error {
 	defer cancel()
 	err := client.Ping(ctx, nil)
 	return err
+}
+
+func ArrayStringToArrayObjectId(arr []string) ([]primitive.ObjectID, error) {
+	obj := make([]primitive.ObjectID, len(arr))
+	for i, v := range arr {
+		id, err := primitive.ObjectIDFromHex(v)
+		if err != nil {
+			return nil, errs.ErrWrongFormat.From(err)
+		}
+		obj[i] = id
+	}
+	return obj, nil
+}
+
+func ArrayObjectIdToArrayString(arr []primitive.ObjectID) []string {
+	ln := make([]string, len(arr))
+	for i, v := range arr {
+		ln[i] = v.Hex()
+	}
+	return ln
 }

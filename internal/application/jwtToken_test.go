@@ -97,7 +97,7 @@ func TestValidateToken(t *testing.T) {
 	if err != nil {
 		t.Error("error while generate access token")
 	}
-	claim, err := JwtServiceInstance.validateToken(encodedToken, "userID")
+	claim, err := JwtServiceInstance.ValidateToken(encodedToken)
 	if err != nil {
 		t.Error("error while validate token")
 	}
@@ -119,7 +119,7 @@ func TestValidateTokenErrTokenExpired(t *testing.T) {
 	if err != nil {
 		t.Error("error while generate access token")
 	}
-	_, err = JwtServiceInstance.validateToken(encodedToken, "userID")
+	_, err = JwtServiceInstance.ValidateToken(encodedToken)
 	if !errors.Is(err, errs.NewHttpError(
 		http.StatusConflict,
 		"token is expired",
@@ -145,7 +145,7 @@ func TestValidateTokenErrNotFound(t *testing.T) {
 
 	}
 	NewJwtService(db, config)
-	_, err = JwtServiceInstance.validateToken(encodedToken, "userID")
+	_, err = JwtServiceInstance.ValidateToken(encodedToken)
 	if !errors.Is(err, errs.NewHttpError(
 		http.StatusConflict,
 		"token already revoke",

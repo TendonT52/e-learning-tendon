@@ -9,19 +9,18 @@ const (
 )
 
 type Curriculum struct {
-	CurriculumId          string 
-	CurriculumName        string 
-	CurriculumDescription string
-	BriefLearningNode     []BriefLearningNode
-	Access                string             
-	CreateBy              string             
-	CreatedAt             time.Time          
-	UpdatedAt             time.Time          
+	ID           string
+	Name         string
+	Description  string
+	Access       string
+	CreateBy     string
+	UpdatedAt    time.Time
+	LearningNode []string
 }
 
 type BriefCurriculum struct {
-	CurriculumId          string 
-	CurriculumName        string 
+	CurriculumId          string
+	CurriculumName        string
 	CurriculumDescription string
-	Access                string 
+	Access                string
 }

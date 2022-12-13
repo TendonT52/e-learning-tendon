@@ -12,11 +12,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+var router *gin.Engine
+
 func loadConfig() {
 	log.Println("Loading config...")
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("..")
+	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	if err != nil {
 		panic(fmt.Errorf("fatal error config file: %w", err))
@@ -24,18 +27,7 @@ func loadConfig() {
 	log.Println("Load config success")
 }
 
-func setupRouter() *gin.Engine {
-	router := gin.New()
-	router.Use(gin.Logger())
-	v1 := router.Group("/api/v1")
-	{
-		v1.POST("/user/sign-up", handlers.SignUpHandler)
-	}
-	return router
-}
-
-func main() {
-	loadConfig()
+func setupInstance() {
 	db.NewClient(viper.GetString("mongo.connection"), db.MongoConfig{
 		CreateTimeOut: viper.GetDuration("mongo.insertTimeOut"),
 		FindTimeout:   viper.GetDuration("mongo.findTimeOut"),
@@ -53,6 +45,33 @@ func main() {
 		AccesstokenDuration:  viper.GetDuration("token.accessTokenExpire"),
 		RefreshtokenDuration: viper.GetDuration("token.refreshTokenExpire"),
 	})
-	router := setupRouter()
+}
+
+func setupRouter() {
+	router = gin.New()
+	router.Use(gin.Logger())
+	handlers.NewHandlerConfig(
+		application.UserServiceInstance,
+		application.JwtServiceInstance,
+		handlers.Config{
+			Url:            viper.GetString("app.url"),
+			CookieSecure:   viper.GetBool("cookie.secure"),
+			CookieHttpOnly: viper.GetBool("cookire.httpOnly"),
+		})
+	v1 := router.Group("/api/v1")
+	{
+		v1.POST("/user/sign-up", handlers.HandlerConfigInstance.SignUpHandler)
+		v1.POST("/user/sign-in", handlers.HandlerConfigInstance.SignInHandler)
+		auth := v1.Group("/auth", handlers.HandlerConfigInstance.Auth())
+		{
+			auth.POST("/user/sign-out", handlers.HandlerConfigInstance.SignOutHandler)
+		}
+	}
+}
+
+func main() {
+	loadConfig()
+	setupInstance()
+	setupRouter()
 	router.Run(":8080")
 }
