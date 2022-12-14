@@ -1,63 +1,84 @@
 package db_test
 
 import (
-	"errors"
-	"testing"
 	"time"
 
 	"github.com/TendonT52/e-learning-tendon/db"
 	"github.com/TendonT52/e-learning-tendon/internal/pkg/errs"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func TestCreateJwtToken(t *testing.T) {
-	_, err := db.JwtDBInstance.InsertJwtToken(time.Now().Add(time.Minute))
-	if err != nil {
-		t.Log(err)
-		t.Error("Error while insert jwt to database")
-	}
-}
+var _ = Describe("Jwt", func() {
+	BeforeEach(func() {
+		db.NewClient("mongodb://admin:password@localhost:27017",
+			db.MongoConfig{
+				CreateTimeOut: time.Minute,
+				FindTimeout:   time.Minute,
+				UpdateTimeout: time.Minute,
+				DeleteTimeout: time.Minute,
+			})
+		db.NewDB("tendon")
+		db.NewJwtDB("jwtToken_test")
+		db.JwtDBInstance.CleanUp()
+	})
 
-func TestGetJwtToken(t *testing.T) {
-	id, err := db.JwtDBInstance.InsertJwtToken(time.Now().Add(time.Minute))
-	if err != nil {
-		t.Log(err)
-		t.Error("Error while insert jwt to database")
-	}
-	err = db.JwtDBInstance.CheckJwtToken(id)
-	if err != nil {
-		t.Error("Error can't find jwt")
-	}
-}
+	Context("Insert jwt token to db", func() {
+		When("Success", func() {
+			It("should return jwt token", func() {
+				tokenString, err := db.JwtDBInstance.InsertJwtToken(time.Now().Add(time.Minute))
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(tokenString).ShouldNot(BeZero())
+			})
+		})
+	})
 
-func TestGetJwtTokenErrorInvalid(t *testing.T) {
-	err := db.JwtDBInstance.CheckJwtToken("fakeId")
-	if !errors.Is(err, errs.ErrInvalidToken) {
-		t.Error("Wrong error type")
-	}
-}
+	Context("Check jwt token", func() {
+		var tokenString string
+		When("Success", func() {
+			BeforeEach(func() {
+				var err error
+				tokenString, err = db.JwtDBInstance.InsertJwtToken(time.Now().Add(time.Minute))
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(tokenString).ShouldNot(BeZero())
+			})
+			It("should return nil", func() {
+				err := db.JwtDBInstance.CheckJwtToken(tokenString)
+				Expect(err).Should(BeNil())
+			})
+		})
+		When("Fail", func() {
+			It("should return error", func() {
+				err := db.JwtDBInstance.CheckJwtToken(tokenString)
+				Expect(err).To(MatchError(errs.ErrNotFound))
+			})
+		})
+	})
 
-func TestGetJwtTokenErrorNotFound(t *testing.T) {
-	err := db.JwtDBInstance.CheckJwtToken("63955f26131a9f4401f6dd1f")
-	if !errors.Is(err, errs.ErrNotFound) {
-		t.Error("Wrong error type")
-	}
-}
+	Context("Delete jwt token", func() {
+		var tokenString string
+		When("Success", func() {
+			BeforeEach(func() {
+				var err error
+				tokenString, err = db.JwtDBInstance.InsertJwtToken(time.Now().Add(time.Minute))
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(tokenString).ShouldNot(BeZero())
+			})
+			It("should return nil", func() {
+				err := db.JwtDBInstance.DeleteJwtToken(tokenString)
+				Expect(err).Should(BeNil())
+			})
+		})
+		When("Fail", func() {
+			It("should return error", func() {
+				err := db.JwtDBInstance.DeleteJwtToken(tokenString)
+				Expect(err).To(MatchError(errs.ErrNotFound))
+			})
+		})
+	})
 
-func TestDeleteJwtToken(t *testing.T) {
-	id, err := db.JwtDBInstance.InsertJwtToken(time.Now().Add(time.Minute))
-	if err != nil {
-		t.Log(err)
-		t.Error("Error while insert jwt to database")
-	}
-	err = db.JwtDBInstance.DeleteJwtToken(id)
-	if err != nil {
-		t.Error("Error while delete jwt token")
-	}
-}
-
-func TestDeleteJwtTokenErrorNotFound(t *testing.T) {
-	err := db.JwtDBInstance.DeleteJwtToken("63955f26131a9f4401f6dd1f")
-	if !errors.Is(err, errs.ErrNotFound) {
-		t.Error("Wrong error type")
-	}
-}
+	AfterEach(func() {
+		db.JwtDBInstance.CleanUp()
+		db.DisconnectMongo()
+	})
+})

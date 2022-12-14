@@ -24,7 +24,8 @@ func NewCurriculumDB(collectionName string) {
 	}
 }
 
-func (cu *curriculumDB) InsertCurriculumDB(name, desc, acc, createBy string, leaningNode []string) (core.Curriculum, error) {
+func (cu *curriculumDB) InsertCurriculum(name, desc, acc, createBy string,
+	leaningNode []string) (core.Curriculum, error) {
 
 	userID, err := primitive.ObjectIDFromHex(createBy)
 	if err != nil {
@@ -33,15 +34,19 @@ func (cu *curriculumDB) InsertCurriculumDB(name, desc, acc, createBy string, lea
 	}
 
 	leaningNodeObj, err := ArrayStringToArrayObjectId(leaningNode)
+	if err != nil {
+		return core.Curriculum{}, errs.ErrWrongFormat.From(err)
+
+	}
 
 	doc := curriculumDoc{
-		ID:           primitive.NewObjectID(),
-		Name:         name,
-		Description:  desc,
-		Access:       acc,
-		CreateBy:     userID,
-		UpdatedAt:    primitive.NewDateTimeFromTime(time.Now()),
-		LearningNode: leaningNodeObj,
+		ID:          primitive.NewObjectID(),
+		Name:        name,
+		Description: desc,
+		Access:      acc,
+		CreateBy:    userID,
+		UpdatedAt:   primitive.NewDateTimeFromTime(time.Now()),
+		Lessons:     leaningNodeObj,
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), config.CreateTimeOut)
 	defer cancel()
@@ -51,13 +56,13 @@ func (cu *curriculumDB) InsertCurriculumDB(name, desc, acc, createBy string, lea
 	}
 
 	cur := core.Curriculum{
-		ID:           doc.ID.Hex(),
-		Name:         doc.Name,
-		Description:  doc.Description,
-		Access:       doc.Access,
-		CreateBy:     doc.ID.Hex(),
-		UpdatedAt:    doc.UpdatedAt.Time(),
-		LearningNode: leaningNode,
+		ID:          doc.ID.Hex(),
+		Name:        doc.Name,
+		Description: doc.Description,
+		Access:      doc.Access,
+		CreateBy:    doc.ID.Hex(),
+		UpdatedAt:   doc.UpdatedAt.Time(),
+		Lessons:     leaningNode,
 	}
 
 	return cur, nil
@@ -80,16 +85,16 @@ func (cu *curriculumDB) GetCurriculumById(id string) (core.Curriculum, error) {
 		return core.Curriculum{}, errs.ErrDatabase.From(err)
 	}
 
-	learningNodeHex := ArrayObjectIdToArrayString(doc.LearningNode)
+	learningNodeHex := ArrayObjectIdToArrayString(doc.Lessons)
 
 	cur := core.Curriculum{
-		ID:           doc.ID.Hex(),
-		Name:         doc.Name,
-		Description:  doc.Description,
-		Access:       doc.Access,
-		CreateBy:     doc.ID.Hex(),
-		UpdatedAt:    doc.UpdatedAt.Time(),
-		LearningNode: learningNodeHex,
+		ID:          doc.ID.Hex(),
+		Name:        doc.Name,
+		Description: doc.Description,
+		Access:      doc.Access,
+		CreateBy:    doc.ID.Hex(),
+		UpdatedAt:   doc.UpdatedAt.Time(),
+		Lessons:     learningNodeHex,
 	}
 	return cur, nil
 }

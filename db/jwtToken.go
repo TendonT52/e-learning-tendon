@@ -17,7 +17,7 @@ type jwtDB struct {
 	collection *mongo.Collection
 }
 
-func NewJwtTokenDB(jsontokenCollectionName string) {
+func NewJwtDB(jsontokenCollectionName string) {
 	JwtDBInstance = &jwtDB{
 		db.Collection(jsontokenCollectionName),
 	}

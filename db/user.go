@@ -45,14 +45,14 @@ func (u *userDB) InsertUser(firstName, lastName, email, hashPassword, role strin
 	enrollHex := ArrayObjectIdToArrayString(doc.EnrollCurriculum)
 
 	user := core.User{
-		ID:               doc.Id.Hex(),
-		FirstName:        firstName,
-		LastName:         lastName,
-		Email:            email,
-		HashPassword:     hashPassword,
-		Role:             role,
-		UpdatedAt:        doc.UpdatedAt.Time(),
-		EnrollCurriculum: enrollHex,
+		ID:           doc.Id.Hex(),
+		FirstName:    firstName,
+		LastName:     lastName,
+		Email:        email,
+		HashPassword: hashPassword,
+		Role:         role,
+		UpdatedAt:    doc.UpdatedAt.Time(),
+		Curricula:    enrollHex,
 	}
 	return user, nil
 }
@@ -73,19 +73,19 @@ func (u *userDB) GetUserByEmail(email string) (core.User, error) {
 	enrollHex := ArrayObjectIdToArrayString(doc.EnrollCurriculum)
 
 	user := core.User{
-		ID:               doc.Id.Hex(),
-		FirstName:        doc.FirstName,
-		LastName:         doc.LastName,
-		Email:            doc.Email,
-		HashPassword:     doc.HashPassword,
-		Role:             doc.Role,
-		UpdatedAt:        doc.UpdatedAt.Time(),
-		EnrollCurriculum: enrollHex,
+		ID:           doc.Id.Hex(),
+		FirstName:    doc.FirstName,
+		LastName:     doc.LastName,
+		Email:        doc.Email,
+		HashPassword: doc.HashPassword,
+		Role:         doc.Role,
+		UpdatedAt:    doc.UpdatedAt.Time(),
+		Curricula:    enrollHex,
 	}
 	return user, nil
 }
 
-func (u *userDB) GetUserById(id string) (core.User, error) {
+func (u *userDB) GetUserByID(id string) (core.User, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return core.User{}, errs.ErrWrongFormat.From(err)
@@ -103,14 +103,14 @@ func (u *userDB) GetUserById(id string) (core.User, error) {
 	}
 	enrollHex := ArrayObjectIdToArrayString(doc.EnrollCurriculum)
 	user := core.User{
-		ID:               doc.Id.Hex(),
-		FirstName:        doc.FirstName,
-		LastName:         doc.LastName,
-		Email:            doc.Email,
-		HashPassword:     doc.HashPassword,
-		Role:             doc.Role,
-		UpdatedAt:        doc.UpdatedAt.Time(),
-		EnrollCurriculum: enrollHex,
+		ID:           doc.Id.Hex(),
+		FirstName:    doc.FirstName,
+		LastName:     doc.LastName,
+		Email:        doc.Email,
+		HashPassword: doc.HashPassword,
+		Role:         doc.Role,
+		UpdatedAt:    doc.UpdatedAt.Time(),
+		Curricula:    enrollHex,
 	}
 	return user, nil
 }
@@ -123,5 +123,7 @@ func (u *userDB) CleanUp() int {
 	if err != nil {
 		log.Fatalf("Error while clean up user collection, %v", err)
 	}
+
+	log.Printf("Clean up user collection, deleted %d documents", result.DeletedCount)
 	return int(result.DeletedCount)
 }

@@ -4,11 +4,6 @@ import (
 	"time"
 )
 
-const (
-	Admin   = "admin"
-	Teacher = "teacher"
-	Student = "student"
-)
 
 type User struct {
 	ID           string
@@ -18,5 +13,5 @@ type User struct {
 	HashPassword string
 	Role         string
 	UpdatedAt    time.Time
-	EnrollCurriculum []string
+	Curricula    []string
 }

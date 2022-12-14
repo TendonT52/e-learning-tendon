@@ -5,12 +5,12 @@ import (
 )
 
 type userDoc struct {
-	Id               primitive.ObjectID   `bson:"_id,omitempty"`
+	Id               primitive.ObjectID   `bson:"_id"`
 	FirstName        string               `bson:"firstName"`
 	LastName         string               `bson:"lastName"`
 	Email            string               `bson:"email"`
 	HashPassword     string               `bson:"password"`
 	Role             string               `bson:"role"`
 	UpdatedAt        primitive.DateTime   `bson:"updated_at"`
-	EnrollCurriculum []primitive.ObjectID `bson:"enroll"`
+	EnrollCurriculum []primitive.ObjectID `bson:"curricula"`
 }
