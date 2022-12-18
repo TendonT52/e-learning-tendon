@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"log"
+	"errors"
 	"time"
 
 	"github.com/TendonT52/e-learning-tendon/internal/core"
@@ -24,106 +24,179 @@ func NewUserDB(userCollectionName string) {
 	}
 }
 
-func (u *userDB) InsertUser(firstName, lastName, email, hashPassword, role string) (core.User, error) {
-	doc := userDoc{
-		Id:               primitive.NewObjectID(),
-		FirstName:        firstName,
-		LastName:         lastName,
-		Email:            email,
-		HashPassword:     hashPassword,
-		Role:             role,
-		UpdatedAt:        primitive.NewDateTimeFromTime(time.Now()),
-		EnrollCurriculum: make([]primitive.ObjectID, 0),
+func (u *userDB) InsertUser(user *core.User) error {
+	userDoc := userDoc{
+		ID:             primitive.NewObjectID(),
+		FirstName:      user.FirstName,
+		LastName:       user.LastName,
+		Email:          user.Email,
+		HashedPassword: user.HashedPassword,
+		Role:           user.Role,
+		Curricula:      HexIDToObjID(user.Curricula),
+		UpdatedAt:      primitive.NewDateTimeFromTime(time.Now()),
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), config.CreateTimeOut)
+	user.ID = userDoc.ID.Hex()
+	user.UpdatedAt = userDoc.UpdatedAt.Time()
+
+	ctx, cancel := context.WithTimeout(context.Background(), config.InsertTimeOut)
 	defer cancel()
-	_, err := u.collection.InsertOne(ctx, doc)
+	_, err := u.collection.InsertOne(ctx, userDoc)
 	if err != nil {
-		return core.User{}, errs.ErrDatabase.From(err)
+		return errs.InsertFailed.From(err)
 	}
-
-	enrollHex := ArrayObjectIdToArrayString(doc.EnrollCurriculum)
-
-	user := core.User{
-		ID:           doc.Id.Hex(),
-		FirstName:    firstName,
-		LastName:     lastName,
-		Email:        email,
-		HashPassword: hashPassword,
-		Role:         role,
-		UpdatedAt:    doc.UpdatedAt.Time(),
-		Curricula:    enrollHex,
-	}
-	return user, nil
+	return nil
 }
 
-func (u *userDB) GetUserByEmail(email string) (core.User, error) {
-	filter := bson.D{{Key: "email", Value: email}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
+func (u *userDB) InsertManyUser(users []core.User) error {
+	userDocs := make([]interface{}, len(users))
+	for i, user := range users {
+		userDoc := userDoc{
+			ID:             primitive.NewObjectID(),
+			FirstName:      user.FirstName,
+			LastName:       user.LastName,
+			Email:          user.Email,
+			HashedPassword: user.HashedPassword,
+			Role:           user.Role,
+			Curricula:      HexIDToObjID(user.Curricula),
+			UpdatedAt:      primitive.NewDateTimeFromTime(time.Now()),
+		}
+		users[i].ID = userDoc.ID.Hex()
+		users[i].UpdatedAt = userDoc.UpdatedAt.Time()
+		userDocs[i] = userDoc
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), config.InsertTimeOut)
 	defer cancel()
-	doc := userDoc{}
-	err := u.collection.FindOne(ctx, filter).Decode(&doc)
+	_, err := u.collection.InsertMany(ctx, userDocs)
+	if err != nil {
+		return errs.InsertFailed.From(err)
+	}
+	return nil
+}
+
+func (u *userDB) FindUserByEmail(email string) (core.User, error) {
+	filter := bson.M{"email": email}
+	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeOut)
+	defer cancel()
+	var userDoc userDoc
+	err := u.collection.FindOne(ctx, filter).Decode(&userDoc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return core.User{}, errs.ErrNotFound.From(err)
+			return core.User{}, errs.UserNotFound
 		}
-		return core.User{}, errs.ErrDatabase.From(err)
+		return core.User{}, errs.FindFailed.From(err)
 	}
-
-	enrollHex := ArrayObjectIdToArrayString(doc.EnrollCurriculum)
-
-	user := core.User{
-		ID:           doc.Id.Hex(),
-		FirstName:    doc.FirstName,
-		LastName:     doc.LastName,
-		Email:        doc.Email,
-		HashPassword: doc.HashPassword,
-		Role:         doc.Role,
-		UpdatedAt:    doc.UpdatedAt.Time(),
-		Curricula:    enrollHex,
-	}
+	user := userDoc.toUser()
 	return user, nil
 }
 
-func (u *userDB) GetUserByID(id string) (core.User, error) {
-	objID, err := primitive.ObjectIDFromHex(id)
+func (u *userDB) FindUser(hexID string) (core.User, error) {
+	objID, err := primitive.ObjectIDFromHex(hexID)
 	if err != nil {
-		return core.User{}, errs.ErrWrongFormat.From(err)
+		return core.User{}, errs.InvalidUserID.From(err)
 	}
-	filter := bson.D{{Key: "_id", Value: objID}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
+	filter := bson.M{"_id": objID}
+	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeOut)
 	defer cancel()
-	doc := userDoc{}
-	err = u.collection.FindOne(ctx, filter).Decode(&doc)
+	var userDoc userDoc
+	err = u.collection.FindOne(ctx, filter).Decode(&userDoc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return core.User{}, errs.ErrNotFound.From(err)
+			return core.User{}, errs.UserNotFound
 		}
-		return core.User{}, errs.ErrDatabase.From(err)
+		return core.User{}, errs.FindFailed.From(err)
 	}
-	enrollHex := ArrayObjectIdToArrayString(doc.EnrollCurriculum)
-	user := core.User{
-		ID:           doc.Id.Hex(),
-		FirstName:    doc.FirstName,
-		LastName:     doc.LastName,
-		Email:        doc.Email,
-		HashPassword: doc.HashPassword,
-		Role:         doc.Role,
-		UpdatedAt:    doc.UpdatedAt.Time(),
-		Curricula:    enrollHex,
-	}
+	user := userDoc.toUser()
 	return user, nil
 }
 
-func (u *userDB) CleanUp() int {
-	filter := bson.D{{}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
-	defer cancel()
-	result, err := u.collection.DeleteMany(ctx, filter)
-	if err != nil {
-		log.Fatalf("Error while clean up user collection, %v", err)
+func (u *userDB) FindManyUser(hexIDs []string) ([]core.User, error) {
+	objIDs := make([]primitive.ObjectID, len(hexIDs))
+	for i, hexID := range hexIDs {
+		objID, err := primitive.ObjectIDFromHex(hexID)
+		if err != nil {
+			return nil, errs.InvalidUserID.From(errors.New(
+				"invalid user id: " + hexID,
+			))
+		}
+		objIDs[i] = objID
 	}
+	filter := bson.M{"_id": bson.M{"$in": objIDs}}
+	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeOut)
+	defer cancel()
+	cursor, err := u.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, errs.FindFailed.From(err)
+	}
+	var userDocs []userDoc
+	if err = cursor.All(ctx, &userDocs); err != nil {
+		return nil, errs.FindFailed.From(err)
+	}
+	users := make([]core.User, len(userDocs))
+	for i, userDoc := range userDocs {
+		users[i] = userDoc.toUser()
+	}
+	return users, nil
+}
 
-	log.Printf("Clean up user collection, deleted %d documents", result.DeletedCount)
-	return int(result.DeletedCount)
+func (u *userDB) UpdateUser(user *core.User) error {
+	userObjID, err := primitive.ObjectIDFromHex(user.ID)
+	if err != nil {
+		return errs.InvalidUserID.From(err)
+	}
+	user.UpdatedAt = time.Now()
+	update := bson.M{"$set": bson.M{
+		"firstName":      user.FirstName,
+		"lastName":       user.LastName,
+		"email":          user.Email,
+		"hashedPassword": user.HashedPassword,
+		"role":           user.Role,
+		"curricula":      HexIDToObjID(user.Curricula),
+		"updatedAt":      primitive.NewDateTimeFromTime(user.UpdatedAt),
+	}}
+	result, err := u.collection.UpdateByID(context.Background(), userObjID, update)
+	if err != nil {
+		return errs.UpdateFailed.From(err)
+	}
+	if result.MatchedCount == 0 {
+		return errs.UserNotFound
+	}
+	return nil
+}
+
+func (u *userDB) DeleteUser(hexID string) error {
+	objID, err := primitive.ObjectIDFromHex(hexID)
+	if err != nil {
+		return errs.InvalidUserID.From(err)
+	}
+	filter := bson.M{"_id": objID}
+	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeOut)
+	defer cancel()
+	result, err := u.collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return errs.DeleteFailed.From(err)
+	}
+	if result.DeletedCount == 0 {
+		return errs.UserNotFound
+	}
+	return nil
+}
+
+func (u *userDB) DeleteManyUser(hexIDs []string) error {
+	ObjIDs := HexIDToObjID(hexIDs)
+	filter := bson.M{"_id": bson.M{"$in": ObjIDs}}
+	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeOut)
+	defer cancel()
+	_, err := u.collection.DeleteMany(ctx, filter)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil
+		}
+		return errs.DeleteFailed.From(err)
+	}
+	return nil
+}
+
+func (u *userDB) Clear() {
+	u.collection.DeleteMany(context.Background(), bson.M{})
 }

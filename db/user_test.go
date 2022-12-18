@@ -11,128 +11,504 @@ import (
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("User", func() {
+var _ = Describe("test user db", Ordered, func() {
 	BeforeEach(func() {
 		db.NewClient("mongodb://admin:password@localhost:27017",
 			db.MongoConfig{
-				CreateTimeOut: time.Minute,
-				FindTimeout:   time.Minute,
-				UpdateTimeout: time.Minute,
-				DeleteTimeout: time.Minute,
+				InsertTimeOut: time.Minute,
+				FindTimeOut:   time.Minute,
+				UpdateTimeOut: time.Minute,
+				DeleteTimeOut: time.Minute,
 			})
 		db.NewDB("tendon")
 		db.NewUserDB("user_test")
-		db.UserDBInstance.CleanUp()
+		db.UserDBInstance.Clear()
 	})
 
 	Context("Insert user to db", func() {
 		When("Success", func() {
 			It("should return user", func() {
-				user, err := db.UserDBInstance.InsertUser(
-					"testFirstName",
-					"testLastName",
-					"testEmail",
-					"testHashPassword",
-					core.Student)
+				user := core.User{
+					FirstName:      "testFirstName",
+					LastName:       "testLastName",
+					Email:          "testEmail",
+					HashedPassword: "testHashPassword",
+					Role:           core.Student,
+					Curricula:      []string{},
+				}
+				err := db.UserDBInstance.InsertUser(&user)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(user).To(MatchFields(IgnoreExtras, Fields{
-					"ID":               Not(BeNil()),
-					"FirstName":        Equal("testFirstName"),
-					"LastName":         Equal("testLastName"),
-					"Email":            Equal("testEmail"),
-					"HashPassword":     Equal("testHashPassword"),
-					"Role":             Equal(core.Student),
-					"UpdatedAt":        Not(BeNil()),
-					"Curricula": BeEmpty(),
+					"ID":             Not(BeNil()),
+					"FirstName":      Equal("testFirstName"),
+					"LastName":       Equal("testLastName"),
+					"Email":          Equal("testEmail"),
+					"HashedPassword": Equal("testHashPassword"),
+					"Role":           Equal(core.Student),
+					"UpdatedAt":      Not(BeNil()),
 				}))
 			})
 		})
 	})
 
-	Context("Get user by email", func() {
+	Context("Insert many user to db", func() {
+		When("Success", func() {
+			It("should return user", func() {
+				users := []core.User{
+					{
+						FirstName:      "testFirstName1",
+						LastName:       "testLastName1",
+						Email:          "testEmail1",
+						HashedPassword: "testHashPassword1",
+						Role:           core.Student,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName2",
+						LastName:       "testLastName2",
+						Email:          "testEmail2",
+						HashedPassword: "testHashPassword2",
+						Role:           core.Teacher,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName3",
+						LastName:       "testLastName3",
+						Email:          "testEmail3",
+						HashedPassword: "testHashPassword3",
+						Role:           core.Admin,
+						Curricula:      []string{},
+					},
+				}
+				err := db.UserDBInstance.InsertManyUser(users)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(users).To(ConsistOf(
+					MatchFields(IgnoreExtras, Fields{
+						"ID":             Not(BeNil()),
+						"FirstName":      Equal("testFirstName1"),
+						"LastName":       Equal("testLastName1"),
+						"Email":          Equal("testEmail1"),
+						"HashedPassword": Equal("testHashPassword1"),
+						"Role":           Equal(core.Student),
+						"Curricula":      Equal([]string{}),
+						"UpdatedAt":      Not(BeNil()),
+					}),
+					MatchFields(IgnoreExtras, Fields{
+						"ID":             Not(BeNil()),
+						"FirstName":      Equal("testFirstName2"),
+						"LastName":       Equal("testLastName2"),
+						"Email":          Equal("testEmail2"),
+						"HashedPassword": Equal("testHashPassword2"),
+						"Role":           Equal(core.Teacher),
+						"Curricula":      Equal([]string{}),
+						"UpdatedAt":      Not(BeNil()),
+					}),
+					MatchFields(IgnoreExtras, Fields{
+						"ID":             Not(BeNil()),
+						"FirstName":      Equal("testFirstName3"),
+						"LastName":       Equal("testLastName3"),
+						"Email":          Equal("testEmail3"),
+						"HashedPassword": Equal("testHashPassword3"),
+						"Role":           Equal(core.Admin),
+						"Curricula":      Equal([]string{}),
+						"UpdatedAt":      Not(BeNil()),
+					}),
+				))
+			})
+		})
+	})
+
+	Context("Find user by email", func() {
 		When("Success", func() {
 			BeforeEach(func() {
-				_, err := db.UserDBInstance.InsertUser(
-					"testFirstName",
-					"testLastName",
-					"testEmail",
-					"testHashPassword",
-					core.Student)
+				users := []core.User{
+					{
+						FirstName:      "testFirstName1",
+						LastName:       "testLastName1",
+						Email:          "testEmail1",
+						HashedPassword: "testHashPassword1",
+						Role:           core.Student,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName2",
+						LastName:       "testLastName2",
+						Email:          "testEmail2",
+						HashedPassword: "testHashPassword2",
+						Role:           core.Teacher,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName3",
+						LastName:       "testLastName3",
+						Email:          "testEmail3",
+						HashedPassword: "testHashPassword3",
+						Role:           core.Admin,
+						Curricula:      []string{},
+					},
+				}
+				err := db.UserDBInstance.InsertManyUser(users)
 				Expect(err).ShouldNot(HaveOccurred())
+				Expect(users).Should(HaveLen(3))
 			})
 			It("should return user", func() {
-				user, err := db.UserDBInstance.GetUserByEmail(
-					"testEmail",
-				)
+				user, err := db.UserDBInstance.FindUserByEmail("testEmail2")
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(user).To(MatchFields(IgnoreExtras, Fields{
-					"ID":               Not(BeNil()),
-					"FirstName":        Equal("testFirstName"),
-					"LastName":         Equal("testLastName"),
-					"Email":            Equal("testEmail"),
-					"HashPassword":     Equal("testHashPassword"),
-					"Role":             Equal(core.Student),
-					"UpdatedAt":        Not(BeNil()),
-					"Curricula": BeEmpty(),
+					"ID":             Not(BeNil()),
+					"FirstName":      Equal("testFirstName2"),
+					"LastName":       Equal("testLastName2"),
+					"Email":          Equal("testEmail2"),
+					"HashedPassword": Equal("testHashPassword2"),
+					"Role":           Equal(core.Teacher),
+					"Curricula":      Equal([]string{}),
+					"UpdatedAt":      Not(BeNil()),
 				}))
 			})
 		})
-		When("Email not found", func() {
-			It("should return error not found", func() {
-				user, err := db.UserDBInstance.GetUserByEmail(
-					"testEmail",
-				)
-				Expect(err).To(MatchError(errs.ErrNotFound))
+		When("user not found", func() {
+			It("should return nil", func() {
+				user, err := db.UserDBInstance.FindUserByEmail("testEmail2")
+				Expect(err).To(MatchError(errs.UserNotFound))
+				Expect(user).To(BeZero())
+			})
+		})
+	})
+
+	Context("Find user", func() {
+		userIDs := make([]string, 3)
+		When("Success", func() {
+			BeforeEach(func() {
+				users := []core.User{
+					{
+						FirstName:      "testFirstName1",
+						LastName:       "testLastName1",
+						Email:          "testEmail1",
+						HashedPassword: "testHashPassword1",
+						Role:           core.Student,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName2",
+						LastName:       "testLastName2",
+						Email:          "testEmail2",
+						HashedPassword: "testHashPassword2",
+						Role:           core.Teacher,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName3",
+						LastName:       "testLastName3",
+						Email:          "testEmail3",
+						HashedPassword: "testHashPassword3",
+						Role:           core.Admin,
+						Curricula:      []string{},
+					},
+				}
+				err := db.UserDBInstance.InsertManyUser(users)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(users).Should(HaveLen(3))
+				userIDs[0] = users[0].ID
+				userIDs[1] = users[1].ID
+				userIDs[2] = users[2].ID
+			})
+			It("should return user", func() {
+				user, err := db.UserDBInstance.FindUser(userIDs[1])
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(user).To(MatchFields(IgnoreExtras, Fields{
+					"ID":             Equal(userIDs[1]),
+					"FirstName":      Equal("testFirstName2"),
+					"LastName":       Equal("testLastName2"),
+					"Email":          Equal("testEmail2"),
+					"HashedPassword": Equal("testHashPassword2"),
+					"Role":           Equal(core.Teacher),
+					"Curricula":      Equal([]string{}),
+					"UpdatedAt":      Not(BeNil()),
+				}))
+			})
+		})
+		When("Fail", func() {
+			It("should return user not found", func() {
+				user, err := db.UserDBInstance.FindUser(userIDs[1])
+				Expect(err).To(MatchError(errs.UserNotFound))
+				Expect(user).To(BeZero())
+			})
+			It("should return invalid id", func() {
+				_, err := db.UserDBInstance.FindUser("invalidID")
+				Expect(err).To(MatchError(errs.InvalidUserID))
+			})
+		})
+	})
+
+	Context("find many user", func() {
+		userIDs := make([]string, 3)
+		When("Success", func() {
+			BeforeEach(func() {
+				users := []core.User{
+					{
+						FirstName:      "testFirstName1",
+						LastName:       "testLastName1",
+						Email:          "testEmail1",
+						HashedPassword: "testHashPassword1",
+						Role:           core.Student,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName2",
+						LastName:       "testLastName2",
+						Email:          "testEmail2",
+						HashedPassword: "testHashPassword2",
+						Role:           core.Teacher,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName3",
+						LastName:       "testLastName3",
+						Email:          "testEmail3",
+						HashedPassword: "testHashPassword3",
+						Role:           core.Admin,
+						Curricula:      []string{},
+					},
+				}
+				err := db.UserDBInstance.InsertManyUser(users)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(users).Should(HaveLen(3))
+				userIDs[0] = users[0].ID
+				userIDs[1] = users[1].ID
+				userIDs[2] = users[2].ID
+			})
+			It("should return user", func() {
+				users, err := db.UserDBInstance.FindManyUser(userIDs)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(users).Should(HaveLen(3))
+				Expect(users[0]).To(MatchFields(IgnoreExtras, Fields{
+					"ID":             Equal(userIDs[0]),
+					"FirstName":      Equal("testFirstName1"),
+					"LastName":       Equal("testLastName1"),
+					"Email":          Equal("testEmail1"),
+					"HashedPassword": Equal("testHashPassword1"),
+					"Role":           Equal(core.Student),
+					"Curricula":      Equal([]string{}),
+					"UpdatedAt":      Not(BeNil()),
+				}))
+				Expect(users[1]).To(MatchFields(IgnoreExtras, Fields{
+					"ID":             Equal(userIDs[1]),
+					"FirstName":      Equal("testFirstName2"),
+					"LastName":       Equal("testLastName2"),
+					"Email":          Equal("testEmail2"),
+					"HashedPassword": Equal("testHashPassword2"),
+					"Role":           Equal(core.Teacher),
+					"Curricula":      Equal([]string{}),
+					"UpdatedAt":      Not(BeNil()),
+				}))
+				Expect(users[2]).To(MatchFields(IgnoreExtras, Fields{
+					"ID":             Equal(userIDs[2]),
+					"FirstName":      Equal("testFirstName3"),
+					"LastName":       Equal("testLastName3"),
+					"Email":          Equal("testEmail3"),
+					"HashedPassword": Equal("testHashPassword3"),
+					"Role":           Equal(core.Admin),
+					"Curricula":      Equal([]string{}),
+					"UpdatedAt":      Not(BeNil()),
+				}))
+			})
+		})
+		When("Fail", func() {
+			BeforeEach(func() {
+				users := []core.User{
+					{
+						FirstName:      "testFirstName1",
+						LastName:       "testLastName1",
+						Email:          "testEmail1",
+						HashedPassword: "testHashPassword1",
+						Role:           core.Student,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName2",
+						LastName:       "testLastName2",
+						Email:          "testEmail2",
+						HashedPassword: "testHashPassword2",
+						Role:           core.Teacher,
+						Curricula:      []string{},
+					},
+				}
+				err := db.UserDBInstance.InsertManyUser(users)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(users).Should(HaveLen(2))
+				userIDs[0] = users[0].ID
+				userIDs[1] = users[1].ID
+			})
+			It("should return user not found", func() {
+				users, err := db.UserDBInstance.FindManyUser(userIDs)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(users).Should(HaveLen(2))
+			})
+			It("should return invalid id", func() {
+				_, err := db.UserDBInstance.FindManyUser([]string{"invalidID"})
+				Expect(err).To(MatchError(errs.InvalidUserID))
+			})
+		})
+	})
+
+	Context("UpdateUser", func() {
+		userIDs := make([]string, 3)
+		When("Success", func() {
+			BeforeEach(func() {
+				users := []core.User{
+					{
+						FirstName:      "testFirstName1",
+						LastName:       "testLastName1",
+						Email:          "testEmail1",
+						HashedPassword: "testHashPassword1",
+						Role:           core.Student,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName2",
+						LastName:       "testLastName2",
+						Email:          "testEmail2",
+						HashedPassword: "testHashPassword2",
+						Role:           core.Teacher,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName3",
+						LastName:       "testLastName3",
+						Email:          "testEmail3",
+						HashedPassword: "testHashPassword3",
+						Role:           core.Admin,
+						Curricula:      []string{},
+					},
+				}
+				err := db.UserDBInstance.InsertManyUser(users)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(users).Should(HaveLen(3))
+				userIDs[0] = users[0].ID
+				userIDs[1] = users[1].ID
+				userIDs[2] = users[2].ID
+			})
+			It("should update user", func() {
+				user := core.User{
+					ID:             userIDs[1],
+					FirstName:      "testUpdatedFirstName2",
+					LastName:       "testUpdatedLastName2",
+					Email:          "testUpdatedEmail2",
+					HashedPassword: "testUpdatedHashPassword2",
+					Role:           core.Teacher,
+					Curricula:      []string{"testCurriculumID2"},
+				}
+				err := db.UserDBInstance.UpdateUser(&user)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(user).To(MatchFields(IgnoreExtras, Fields{
+					"ID":             Equal(userIDs[1]),
+					"FirstName":      Equal("testUpdatedFirstName2"),
+					"LastName":       Equal("testUpdatedLastName2"),
+					"Email":          Equal("testUpdatedEmail2"),
+					"HashedPassword": Equal("testUpdatedHashPassword2"),
+					"Role":           Equal(core.Teacher),
+					"Curricula":      Equal([]string{"testCurriculumID2"}),
+					"UpdatedAt":      Not(BeNil()),
+				}))
+			})
+		})
+	})
+
+	Context("Delete user", func() {
+		When("Success", func() {
+			userIDs := make([]string, 3)
+			BeforeEach(func() {
+				users := []core.User{
+					{
+						FirstName:      "testFirstName1",
+						LastName:       "testLastName1",
+						Email:          "testEmail1",
+						HashedPassword: "testHashPassword1",
+						Role:           core.Student,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName2",
+						LastName:       "testLastName2",
+						Email:          "testEmail2",
+						HashedPassword: "testHashPassword2",
+						Role:           core.Teacher,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName3",
+						LastName:       "testLastName3",
+						Email:          "testEmail3",
+						HashedPassword: "testHashPassword3",
+						Role:           core.Admin,
+						Curricula:      []string{},
+					},
+				}
+				err := db.UserDBInstance.InsertManyUser(users)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(users).Should(HaveLen(3))
+				userIDs[0] = users[0].ID
+				userIDs[1] = users[1].ID
+				userIDs[2] = users[2].ID
+			})
+			It("should delete user", func() {
+				err := db.UserDBInstance.DeleteUser(userIDs[1])
+				Expect(err).ShouldNot(HaveOccurred())
+				user, err := db.UserDBInstance.FindUser(userIDs[1])
+				Expect(err).To(MatchError(errs.UserNotFound))
 				Expect(user).Should(BeZero())
 			})
 		})
 	})
 
-	Context("Get user by id", func() {
-		var id string
+	Context("Delete many users", func() {
 		When("Success", func() {
+			userIDs := make([]string, 3)
 			BeforeEach(func() {
-				var err error
-				user, err := db.UserDBInstance.InsertUser(
-					"testFirstName",
-					"testLastName",
-					"testEmail",
-					"testHashPassword",
-					core.Student)
-				id = user.ID
+				users := []core.User{
+					{
+						FirstName:      "testFirstName1",
+						LastName:       "testLastName1",
+						Email:          "testEmail1",
+						HashedPassword: "testHashPassword1",
+						Role:           core.Student,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName2",
+						LastName:       "testLastName2",
+						Email:          "testEmail2",
+						HashedPassword: "testHashPassword2",
+						Role:           core.Teacher,
+						Curricula:      []string{},
+					},
+					{
+						FirstName:      "testFirstName3",
+						LastName:       "testLastName3",
+						Email:          "testEmail3",
+						HashedPassword: "testHahPassword3",
+						Role:           core.Admin,
+						Curricula:      []string{},
+					},
+				}
+				err := db.UserDBInstance.InsertManyUser(users)
 				Expect(err).ShouldNot(HaveOccurred())
+				Expect(users).Should(HaveLen(3))
+				userIDs[0] = users[0].ID
+				userIDs[1] = users[1].ID
+				userIDs[2] = users[2].ID
 			})
-			It("should return user", func() {
-				user, err := db.UserDBInstance.GetUserByID(
-					id,
-				)
+			It("should delete many users", func() {
+				err := db.UserDBInstance.DeleteManyUser(userIDs)
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(user).To(MatchFields(IgnoreExtras, Fields{
-					"ID":               Equal(id),
-					"FirstName":        Equal("testFirstName"),
-					"LastName":         Equal("testLastName"),
-					"Email":            Equal("testEmail"),
-					"HashPassword":     Equal("testHashPassword"),
-					"Role":             Equal(core.Student),
-					"UpdatedAt":        Not(BeNil()),
-					"Curricula": BeEmpty(),
-				}))
-			})
-		})
-		When("ID not found", func() {
-			It("should error not found", func() {
-				user, err := db.UserDBInstance.GetUserByID(
-					id,
-				)
-				Expect(err).To(MatchError(errs.ErrNotFound))
-				Expect(user).Should(BeZero())
+				users, err := db.UserDBInstance.FindManyUser(userIDs)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(users).Should(HaveLen(0))
 			})
 		})
 	})
 
-
-	AfterEach(func() {
-		db.UserDBInstance.CleanUp()
+	AfterAll(func() {
 		db.DisconnectMongo()
 	})
 })

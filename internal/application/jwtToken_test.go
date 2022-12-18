@@ -34,7 +34,7 @@ func TestGenerateAccessTokenJwtErrDatabase(t *testing.T) {
 		AccesstokenDuration:  time.Minute,
 		RefreshtokenDuration: time.Minute,
 	}
-	db := &mock.MockJwtDB{Insert: errs.ErrDatabase}
+	db := &mock.MockJwtDB{Insert: errs.Database}
 	NewJwtService(db, config)
 	_, err := JwtServiceInstance.generateAccessToken("userID")
 	httpErr, ok := err.(errs.HttpError)
@@ -73,7 +73,7 @@ func TestGenerateRefreshTokenJwtErrDatabase(t *testing.T) {
 		AccesstokenDuration:  time.Minute,
 		RefreshtokenDuration: time.Minute,
 	}
-	db := &mock.MockJwtDB{Insert: errs.ErrDatabase}
+	db := &mock.MockJwtDB{Insert: errs.Database}
 	NewJwtService(db, config)
 	_, err := JwtServiceInstance.generateRefreshToken("userID")
 	if !errors.Is(err, errs.NewHttpError(
@@ -136,7 +136,7 @@ func TestValidateTokenErrNotFound(t *testing.T) {
 		RefreshtokenDuration: time.Minute,
 	}
 	db := &mock.MockJwtDB{
-		Check: errs.ErrNotFound,
+		Check: errs.NotFound,
 	}
 	NewJwtService(db, config)
 	encodedToken, err := JwtServiceInstance.generateAccessToken("userID")

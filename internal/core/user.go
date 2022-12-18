@@ -4,14 +4,13 @@ import (
 	"time"
 )
 
-
 type User struct {
-	ID           string
-	FirstName    string
-	LastName     string
-	Email        string
-	HashPassword string
-	Role         string
-	UpdatedAt    time.Time
-	Curricula    []string
+	ID             string
+	FirstName      string
+	LastName       string
+	Email          string
+	HashedPassword string
+	Role           string
+	Curricula      []string
+	UpdatedAt      time.Time
 }

@@ -12,7 +12,7 @@ import (
 )
 
 func TestSignUp(t *testing.T) {
-	userDB := &mock.MockUserDB{GetByEmail: errs.ErrNotFound}
+	userDB := &mock.MockUserDB{GetByEmail: errs.NotFound}
 	jwtDB := &mock.MockJwtDB{}
 	config := core.JwtConfig{
 		AppName:              "test app name",
@@ -40,7 +40,7 @@ func TestSignUp(t *testing.T) {
 }
 
 func TestSignIn(t *testing.T) {
-	userDB := &mock.MockUserDB{GetByEmail: errs.ErrNotFound}
+	userDB := &mock.MockUserDB{GetByEmail: errs.NotFound}
 	jwtDB := &mock.MockJwtDB{}
 	config := core.JwtConfig{
 		AppName:              "test app name",

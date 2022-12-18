@@ -1,12 +1,29 @@
 package errs
 
 var (
-	ErrNotFound    = appError{kind: "not found"}
-	ErrWrongFormat = appError{kind: "wrong format"}
-	ErrDatabase    = appError{kind: "database error"}
+	UserNotFound        = appError{kind: "user not found"}
+	NodeNotFound        = appError{kind: "node not found"}
+	LessonNotFound      = appError{kind: "lesson not found"}
+	CurriculumNotFound  = appError{kind: "curriculum not found"}
+	InvalidUserID       = appError{kind: "invalid user id"}
+	InvalidNodeID       = appError{kind: "invalid node id"}
+	InvalidLessonID     = appError{kind: "invalid lesson id"}
+	InvalidCurriculumID = appError{kind: "invalid curriculum id"}
 
-	ErrInvalidToken    = appError{kind: "invalid token"}
-	ErrTokenExpired    = appError{kind: "token expired"}
+	IDShouldBeEmpty          = appError{kind: "id should be empty"}
+	CreateByShouldNotBeEmpty = appError{kind: "create by should not be empty"}
+	TypeShouldNotBeEmpty     = appError{kind: "type should not be empty"}
+	UpdatedAtShouldBeEmpty   = appError{kind: "updated at should be empty"}
+	DataShouldNotBeEmpty     = appError{kind: "data should not be empty"}
+
+	InsertFailed = appError{kind: "insert failed"}
+	UpdateFailed = appError{kind: "update failed"}
+	DeleteFailed = appError{kind: "delete failed"}
+	FindFailed   = appError{kind: "find failed"}
+
+	InvalidToken = appError{kind: "invalid token"}
+	TokenExpired = appError{kind: "token expired"}
+	TokenNotfound = appError{kind: "token not found"}
 )
 
 type appError struct {

@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/TendonT52/e-learning-tendon/internal/core"
@@ -24,229 +23,163 @@ func NewLessonDB(collectionName string) {
 	}
 }
 
-func (l *lessonDB) InsertLessonDB(name, desc, acc, createBy string,
-	node, next, prev []string) (core.Lesson, error) {
-
-	userID, err := primitive.ObjectIDFromHex(createBy)
+func (l *lessonDB) InsertLesson(lesson *core.Lesson) (err error) {
+	userObjID, err := primitive.ObjectIDFromHex(lesson.CreateBy)
 	if err != nil {
-		return core.Lesson{}, errs.ErrWrongFormat.From(err)
+		return errs.InvalidUserID
 	}
-
-	nodeObj, err := ArrayStringToArrayObjectId(node)
-	if err != nil {
-		return core.Lesson{}, errs.ErrWrongFormat.From(err)
-	}
-	nextObj, err := ArrayStringToArrayObjectId(next)
-	if err != nil {
-		return core.Lesson{}, errs.ErrWrongFormat.From(err)
-	}
-
-	prevObj, err := ArrayStringToArrayObjectId(next)
-	if err != nil {
-		return core.Lesson{}, errs.ErrWrongFormat.From(err)
-	}
-
-	doc := lessonDoc{
+	lessonDoc := lessonDoc{
 		ID:          primitive.NewObjectID(),
-		Name:        name,
-		Description: desc,
-		Access:      acc,
-		CreateBy:    userID,
+		Name:        lesson.Name,
+		Description: lesson.Description,
+		Access:      lesson.Access,
+		CreateBy:    userObjID,
 		UpdatedAt:   primitive.NewDateTimeFromTime(time.Now()),
-		Node:        nodeObj,
-		NextLesson:  nextObj,
-		PrevLesson:  prevObj,
+		Nodes:       HexIDToObjID(lesson.Nodes),
+		NextLessons: HexIDToObjID(lesson.NextLessons),
+		PrevLessons: HexIDToObjID(lesson.PrevLessons),
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), config.CreateTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), config.InsertTimeOut)
 	defer cancel()
-	_, err = l.collection.InsertOne(ctx, doc)
+	_, err = l.collection.InsertOne(ctx, lessonDoc)
 	if err != nil {
-		return core.Lesson{}, errs.ErrDatabase.From(err)
+		return errs.InsertFailed
 	}
-
-	learningNode := core.Lesson{
-		ID:          doc.ID.Hex(),
-		Name:        doc.Name,
-		Description: doc.Description,
-		CreateBy:    doc.CreateBy.Hex(),
-		Nodes:       node,
-		NextLessons: next,
-		PrevLessons: prev,
-	}
-	return learningNode, nil
+	lesson.ID = lessonDoc.ID.Hex()
+	lesson.UpdatedAt = lessonDoc.UpdatedAt.Time()
+	return nil
 }
 
-func (l *lessonDB) InsertManyLessonDB(name, desc, acc []string,
-	createBy string, node, next, prev [][]string) ([]core.Lesson, error) {
-
-	userID, err := primitive.ObjectIDFromHex(createBy)
-	if err != nil {
-		return []core.Lesson{}, errs.ErrWrongFormat.From(err)
-	}
-
-	var docs []interface{}
-	for i := 0; i < len(name); i++ {
-		nodeObj, err := ArrayStringToArrayObjectId(node[i])
+func (l *lessonDB) InsertManyLesson(lessons []core.Lesson) (err error) {
+	lessonDocs := make([]interface{}, len(lessons))
+	for i, lesson := range lessons {
+		userObjID, err := primitive.ObjectIDFromHex(lesson.CreateBy)
 		if err != nil {
-			return []core.Lesson{}, errs.ErrWrongFormat.From(err)
+			return errs.InvalidUserID
 		}
-		nextObj, err := ArrayStringToArrayObjectId(next[i])
-		if err != nil {
-			return []core.Lesson{}, errs.ErrWrongFormat.From(err)
-		}
-
-		prevObj, err := ArrayStringToArrayObjectId(next[i])
-		if err != nil {
-			return []core.Lesson{}, errs.ErrWrongFormat.From(err)
-		}
-
-		doc := lessonDoc{
+		lessonDocs[i] = lessonDoc{
 			ID:          primitive.NewObjectID(),
-			Name:        name[i],
-			Description: desc[i],
-			Access:      acc[i],
-			CreateBy:    userID,
+			Name:        lesson.Name,
+			Description: lesson.Description,
+			Access:      lesson.Access,
+			CreateBy:    userObjID,
 			UpdatedAt:   primitive.NewDateTimeFromTime(time.Now()),
-			Node:        nodeObj,
-			NextLesson:  nextObj,
-			PrevLesson:  prevObj,
+			Nodes:       HexIDToObjID(lesson.Nodes),
+			NextLessons: HexIDToObjID(lesson.NextLessons),
+			PrevLessons: HexIDToObjID(lesson.PrevLessons),
 		}
-		docs = append(docs, doc)
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), config.CreateTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), config.InsertTimeOut)
 	defer cancel()
-	_, err = l.collection.InsertMany(ctx, docs)
+	_, err = l.collection.InsertMany(ctx, lessonDocs)
 	if err != nil {
-		return []core.Lesson{}, errs.ErrDatabase.From(err)
+		return errs.InsertFailed
 	}
-
-	var learningNodes []core.Lesson
-	for _, doc := range docs {
-		learningNode := core.Lesson{
-			ID:          doc.(lessonDoc).ID.Hex(),
-			Name:        doc.(lessonDoc).Name,
-			Description: doc.(lessonDoc).Description,
-			CreateBy:    doc.(lessonDoc).CreateBy.Hex(),
-			Nodes:       ArrayObjectIdToArrayString(doc.(lessonDoc).Node),
-			NextLessons: ArrayObjectIdToArrayString(doc.(lessonDoc).NextLesson),
-			PrevLessons: ArrayObjectIdToArrayString(doc.(lessonDoc).PrevLesson),
-		}
-		learningNodes = append(learningNodes, learningNode)
+	for i := range lessons {
+		lessons[i].ID = lessonDocs[i].(lessonDoc).ID.Hex()
+		lessons[i].UpdatedAt = lessonDocs[i].(lessonDoc).UpdatedAt.Time()
 	}
-	return learningNodes, nil
+	return nil
 }
 
-func (l *lessonDB) GetLessonByID(hexID string) (core.Lesson, error) {
+func (l *lessonDB) FindLesson(hexID string) (core.Lesson, error) {
 	objID, err := primitive.ObjectIDFromHex(hexID)
 	if err != nil {
-		return core.Lesson{}, errs.ErrWrongFormat.From(err)
+		return core.Lesson{}, errs.InvalidLessonID
 	}
-	filter := bson.D{{Key: "_id", Value: objID}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
+	filter := bson.M{"_id": objID}
+	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeOut)
 	defer cancel()
-	doc := lessonDoc{}
-	err = l.collection.FindOne(ctx, filter).Decode(&doc)
+	var lessonDoc lessonDoc
+	err = l.collection.FindOne(ctx, filter).Decode(&lessonDoc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return core.Lesson{}, errs.ErrNotFound.From(err)
+			return core.Lesson{}, errs.LessonNotFound
 		}
-		return core.Lesson{}, errs.ErrDatabase.From(err)
+		return core.Lesson{}, errs.FindFailed
 	}
-
-	learningNode := core.Lesson{
-		ID:          doc.ID.Hex(),
-		Name:        doc.Name,
-		Description: doc.Description,
-		CreateBy:    doc.CreateBy.Hex(),
-		Nodes:       ArrayObjectIdToArrayString(doc.Node),
-		NextLessons: ArrayObjectIdToArrayString(doc.NextLesson),
-		PrevLessons: ArrayObjectIdToArrayString(doc.PrevLesson),
-	}
-	return learningNode, nil
+	return lessonDoc.toLesson(), nil
 }
 
-func (l *lessonDB) GetLessonManyByID(hexID []string) ([]core.Lesson, error) {
-	objID, err := ArrayStringToArrayObjectId(hexID)
-	if err != nil {
-		return []core.Lesson{}, errs.ErrWrongFormat.From(err)
-	}
-	filter := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: objID}}}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
+func (l *lessonDB) FindManyLesson(hexIDs []string) ([]core.Lesson, error) {
+	objID := HexIDToObjID(hexIDs)
+	filter := bson.M{"_id": bson.M{"$in": objID}}
+	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeOut)
 	defer cancel()
 	cursor, err := l.collection.Find(ctx, filter)
 	if err != nil {
-		return []core.Lesson{}, errs.ErrDatabase.From(err)
+		return nil, errs.FindFailed
 	}
-	var docs []lessonDoc
-	err = cursor.All(ctx, &docs)
-	if err != nil {
-		return []core.Lesson{}, errs.ErrDatabase.From(err)
+	var lessonDocs []lessonDoc
+	if err:= cursor.All(ctx, &lessonDocs); err != nil {
+		return nil, errs.FindFailed
 	}
-	if len(docs) == 0 {
-		return []core.Lesson{}, errs.ErrNotFound.From(err)
+	lessons := make([]core.Lesson, len(lessonDocs))
+	for i, lessonDoc := range lessonDocs {
+		lessons[i] = lessonDoc.toLesson()
 	}
-	var learningNodes []core.Lesson
-	for _, doc := range docs {
-		learningNode := core.Lesson{
-			ID:          doc.ID.Hex(),
-			Name:        doc.Name,
-			Description: doc.Description,
-			CreateBy:    doc.CreateBy.Hex(),
-			Nodes:       ArrayObjectIdToArrayString(doc.Node),
-			NextLessons: ArrayObjectIdToArrayString(doc.NextLesson),
-			PrevLessons: ArrayObjectIdToArrayString(doc.PrevLesson),
-		}
-		learningNodes = append(learningNodes, learningNode)
-	}
-	return learningNodes, nil
+	return lessons, nil
 }
 
-func (l *lessonDB) DeleteLesson(hexID string) error {
-	id, err := primitive.ObjectIDFromHex(hexID)
+func (l *lessonDB) UpdateLesson(lesson *core.Lesson) error {
+	objID, err := primitive.ObjectIDFromHex(lesson.ID)
 	if err != nil {
-		return errs.ErrWrongFormat.From(err)
+		return errs.InvalidLessonID
 	}
-	filter := bson.D{{Key: "_id", Value: id}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeout)
+	filter := bson.M{"_id": objID}
+	update := bson.M{"$set": bson.M{
+		"name":        lesson.Name,
+		"description": lesson.Description,
+		"access":      lesson.Access,
+		"updated_at":  primitive.NewDateTimeFromTime(time.Now()),
+		"nodes":       HexIDToObjID(lesson.Nodes),
+		"next_lessons": HexIDToObjID(lesson.NextLessons),
+		"prev_lessons": HexIDToObjID(lesson.PrevLessons),
+	}}
+	ctx, cancel := context.WithTimeout(context.Background(), config.UpdateTimeOut)
+	defer cancel()
+	result, err := l.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return errs.UpdateFailed
+	}
+	if result.MatchedCount == 0 {
+		return errs.LessonNotFound
+	}
+	lesson.UpdatedAt = time.Now()
+	return nil
+}
+
+
+func (l *lessonDB) DeleteLesson(hexId string) error {
+	objID, err := primitive.ObjectIDFromHex(hexId)
+	if err != nil {
+		return errs.InvalidLessonID
+	}
+	filter := bson.M{"_id": objID}
+	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeOut)
 	defer cancel()
 	result, err := l.collection.DeleteOne(ctx, filter)
 	if err != nil {
-		return errs.ErrDatabase.From(err)
+		return errs.DeleteFailed
 	}
 	if result.DeletedCount == 0 {
-		return errs.ErrNotFound
+		return errs.LessonNotFound
 	}
 	return nil
 }
 
-func (l *lessonDB) DeleteManyLesson(hexID []string) error {
-	id, err := ArrayStringToArrayObjectId(hexID)
-	if err != nil {
-		return errs.ErrWrongFormat.From(err)
-	}
-	filter := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: id}}}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeout)
+func (l *lessonDB) DeleteManyLesson(hexIds []string) error {
+	objIDs := HexIDToObjID(hexIds)
+	filter := bson.M{"_id": bson.M{"$in": objIDs}}
+	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeOut)
 	defer cancel()
-	result, err := l.collection.DeleteMany(ctx, filter)
+	_, err := l.collection.DeleteMany(ctx, filter)
 	if err != nil {
-		return errs.ErrDatabase.From(err)
-	}
-	if result.DeletedCount == 0 {
-		return errs.ErrNotFound
+		return errs.DeleteFailed
 	}
 	return nil
 }
 
-func (l *lessonDB) CleanUp() int {
-	filter := bson.D{{}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
-	defer cancel()
-	result, err := l.collection.DeleteMany(ctx, filter)
-	if err != nil {
-		log.Fatalf("Error while clean up leaning node collection, %v", err)
-	}
-	log.Println()
-	log.Printf("Learning node collection cleaned, %d records deleted", result.DeletedCount)
-	return int(result.DeletedCount)
+func (l *lessonDB) Clear() {
+	l.collection.DeleteMany(context.Background(), bson.M{})
 }

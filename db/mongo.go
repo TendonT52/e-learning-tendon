@@ -5,7 +5,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/TendonT52/e-learning-tendon/internal/pkg/errs"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -16,10 +15,10 @@ var db *mongo.Database
 var config MongoConfig
 
 type MongoConfig struct {
-	CreateTimeOut time.Duration
-	FindTimeout   time.Duration
-	UpdateTimeout time.Duration
-	DeleteTimeout time.Duration
+	InsertTimeOut time.Duration
+	FindTimeOut   time.Duration
+	UpdateTimeOut time.Duration
+	DeleteTimeOut time.Duration
 }
 
 func NewClient(connection string, mongoconfig MongoConfig) {
@@ -58,22 +57,18 @@ func pingMongo() error {
 	return err
 }
 
-func ArrayStringToArrayObjectId(arr []string) ([]primitive.ObjectID, error) {
-	obj := make([]primitive.ObjectID, len(arr))
-	for i, v := range arr {
-		id, err := primitive.ObjectIDFromHex(v)
-		if err != nil {
-			return nil, errs.ErrWrongFormat.From(err)
-		}
-		obj[i] = id
-	}
-	return obj, nil
-}
-
-func ArrayObjectIdToArrayString(arr []primitive.ObjectID) []string {
+func ObjIDToHexID(arr []primitive.ObjectID) []string {
 	ln := make([]string, len(arr))
 	for i, v := range arr {
 		ln[i] = v.Hex()
+	}
+	return ln
+}
+
+func HexIDToObjID(arr []string) []primitive.ObjectID {
+	ln := make([]primitive.ObjectID, len(arr))
+	for i, v := range arr {
+		ln[i], _ = primitive.ObjectIDFromHex(v)
 	}
 	return ln
 }

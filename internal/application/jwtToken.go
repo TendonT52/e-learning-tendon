@@ -125,7 +125,7 @@ func (js *jwtService) ValidateToken(encodedToken string) (jwt.RegisteredClaims, 
 	}
 	err = js.jwtDB.CheckJwtToken(claim.ID)
 	if err != nil {
-		if errors.Is(err, errs.ErrNotFound) {
+		if errors.Is(err, errs.NotFound) {
 			return claim, errs.NewHttpError(
 				http.StatusConflict,
 				"token already revoke",
@@ -147,7 +147,7 @@ func (js *jwtService) revokeToken(encodedToken string) error {
 	}
 	err = js.jwtDB.DeleteJwtToken(claim.ID)
 	if err != nil {
-		if errors.Is(err, errs.ErrNotFound) {
+		if errors.Is(err, errs.NotFound) {
 			return errs.NewHttpError(
 				http.StatusConflict,
 				"token already revoke",

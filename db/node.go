@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"log"
+	"errors"
 	"time"
 
 	"github.com/TendonT52/e-learning-tendon/internal/core"
@@ -24,184 +24,152 @@ func NewNodeDB(collectionName string) {
 	}
 }
 
-func (n *NodeDB) InsertNode(typ, data, createBy string) (core.Node, error) {
-	userID, err := primitive.ObjectIDFromHex(createBy)
-	if err != nil {
-		return core.Node{}, errs.ErrWrongFormat.From(err)
-	}
-	doc := nodeDoc{
+func (n *NodeDB) InsertNode(node *core.Node) (err error) {
+	objID, _ := primitive.ObjectIDFromHex(node.CreateBy)
+	nodeDoc := nodeDoc{
 		ID:        primitive.NewObjectID(),
-		Type:      typ,
-		Data:      data,
-		CreateBy:  userID,
+		Type:      node.Type,
+		Data:      node.Data,
+		CreateBy:  objID,
 		UpdatedAt: primitive.NewDateTimeFromTime(time.Now()),
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), config.CreateTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), config.InsertTimeOut)
 	defer cancel()
-	_, err = n.collection.InsertOne(ctx, doc)
+	_, err = n.collection.InsertOne(ctx, nodeDoc)
 	if err != nil {
-		return core.Node{}, errs.ErrDatabase.From(err)
+		return err
 	}
-	node := core.Node{
-		ID:        doc.ID.Hex(),
-		Type:      doc.Type,
-		Data:      doc.Data,
-		CreateBy:  doc.CreateBy.Hex(),
-		UpdatedAt: doc.UpdatedAt.Time(),
-	}
-	return node, nil
+	node.ID = nodeDoc.ID.Hex()
+	node.UpdatedAt = nodeDoc.UpdatedAt.Time()
+	return nil
 }
 
-func (n *NodeDB) InsertNodeMany(typ, data []string, createBy string) ([]core.Node, error) {
-	if len(typ) != len(data) {
-		return nil, errs.ErrWrongFormat
-	}
-	var docs []interface{}
-	userID, err := primitive.ObjectIDFromHex(createBy)
-	if err != nil {
-		return nil, errs.ErrWrongFormat.From(err)
-	}
-	for i := 0; i < len(typ); i++ {
-		doc := nodeDoc{
+func (n *NodeDB) InsertManyNode(nodes []core.Node) (err error) {
+	nodeDocs := make([]interface{}, len(nodes))
+	for i, node := range nodes {
+		objID, _ := primitive.ObjectIDFromHex(node.CreateBy)
+		nodeDocs[i] = nodeDoc{
 			ID:        primitive.NewObjectID(),
-			Type:      typ[i],
-			Data:      data[i],
-			CreateBy:  userID,
+			Type:      node.Type,
+			Data:      node.Data,
+			CreateBy:  objID,
 			UpdatedAt: primitive.NewDateTimeFromTime(time.Now()),
 		}
-		docs = append(docs, doc)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), config.CreateTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), config.InsertTimeOut)
 	defer cancel()
-	_, err = n.collection.InsertMany(ctx, docs)
+	_, err = n.collection.InsertMany(ctx, nodeDocs)
 	if err != nil {
-		return nil, errs.ErrDatabase.From(err)
+		return err
 	}
-	var nodes []core.Node
-	for _, doc := range docs {
-		node := core.Node{
-			ID:        doc.(nodeDoc).ID.Hex(),
-			Type:      doc.(nodeDoc).Type,
-			Data:      doc.(nodeDoc).Data,
-			CreateBy:  doc.(nodeDoc).CreateBy.Hex(),
-			UpdatedAt: doc.(nodeDoc).UpdatedAt.Time(),
-		}
-		nodes = append(nodes, node)
+	for i := range nodes {
+		nodes[i].ID = nodeDocs[i].(nodeDoc).ID.Hex()
+		nodes[i].UpdatedAt = nodeDocs[i].(nodeDoc).UpdatedAt.Time()
 	}
-	return nodes, nil
+	return nil
 }
 
-func (n *NodeDB) GetNodeByID(id string) (core.Node, error) {
+func (n *NodeDB) FindNode(id string) (core.Node, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return core.Node{}, errs.ErrWrongFormat.From(err)
+		return core.Node{}, errs.InvalidNodeID
 	}
-	filter := bson.D{{Key: "_id", Value: objID}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
+	filter := bson.M{"_id": objID}
+	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeOut)
 	defer cancel()
-	doc := nodeDoc{}
-	err = n.collection.FindOne(ctx, filter).Decode(&doc)
+	var nodeDoc nodeDoc
+	err = n.collection.FindOne(ctx, filter).Decode(&nodeDoc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return core.Node{}, errs.ErrNotFound.From(err)
+			return core.Node{}, errs.NodeNotFound
 		}
-		return core.Node{}, errs.ErrDatabase.From(err)
+		return core.Node{}, errs.FindFailed
 	}
-	node := core.Node{
-		ID:        doc.ID.Hex(),
-		Type:      doc.Type,
-		Data:      doc.Data,
-		CreateBy:  doc.CreateBy.Hex(),
-		UpdatedAt: doc.UpdatedAt.Time(),
-	}
+	node := nodeDoc.toNode()
 	return node, nil
 }
 
-func (n *NodeDB) GetNodeManyByID(id []string) ([]core.Node, error) {
-	var objID []primitive.ObjectID
-	for _, i := range id {
-		obj, err := primitive.ObjectIDFromHex(i)
+func (n *NodeDB) FindManyNode(ids []string) ([]core.Node, error) {
+	objIDs := make([]primitive.ObjectID, len(ids))
+	for i, id := range ids {
+		objID, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
-			return nil, errs.ErrWrongFormat.From(err)
+			return nil, errs.InvalidNodeID.From(errors.New("invalid id: " + id))
 		}
-		objID = append(objID, obj)
+		objIDs[i] = objID
 	}
-	filter := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: objID}}}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
+	filter := bson.M{"_id": bson.M{"$in": objIDs}}
+	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeOut)
 	defer cancel()
 	cursor, err := n.collection.Find(ctx, filter)
 	if err != nil {
-		return nil, errs.ErrDatabase.From(err)
+		return nil, errs.FindFailed
 	}
-	var docs []nodeDoc
-	if err = cursor.All(ctx, &docs); err != nil {
-		return nil, errs.ErrDatabase.From(err)
+	var nodeDocs []nodeDoc
+	if err = cursor.All(ctx, &nodeDocs); err != nil {
+		return nil, errs.FindFailed
 	}
-	if len(docs) == 0 {
-		return nil, errs.ErrNotFound.From(err)
-	}
-	var nodes []core.Node
-	for _, doc := range docs {
-		node := core.Node{
-			ID:        doc.ID.Hex(),
-			Type:      doc.Type,
-			Data:      doc.Data,
-			CreateBy:  doc.CreateBy.Hex(),
-			UpdatedAt: doc.UpdatedAt.Time(),
-		}
-		nodes = append(nodes, node)
+	nodes := make([]core.Node, len(nodeDocs))
+	for i, nodeDoc := range nodeDocs {
+		nodes[i] = nodeDoc.toNode()
 	}
 	return nodes, nil
 }
 
-func (n *NodeDB) DeleteNodeByID(hexId string) error {
-	id, err := primitive.ObjectIDFromHex(hexId)
+func (n *NodeDB) UpdateNode(node *core.Node) error {
+	objID, err := primitive.ObjectIDFromHex(node.ID)
 	if err != nil {
-		return errs.ErrInvalidToken.From(err)
+		return errs.InvalidNodeID
 	}
-	filter := bson.D{{Key: "_id", Value: id}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeout)
+	node.UpdatedAt = time.Now()
+	update := bson.M{"$set": bson.M{
+		"type":       node.Type,
+		"data":       node.Data,
+		"updated_at": primitive.NewDateTimeFromTime(node.UpdatedAt),
+	}}
+	filter := bson.M{"_id": objID}
+	ctx, cancel := context.WithTimeout(context.Background(), config.UpdateTimeOut)
+	defer cancel()
+	result, err := n.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return errs.UpdateFailed
+	}
+	if result.MatchedCount == 0 {
+		return errs.NodeNotFound
+	}
+	return nil
+}
+
+func (n *NodeDB) DeleteNode(hexId string) error {
+	objID, err := primitive.ObjectIDFromHex(hexId)
+	if err != nil {
+		return errs.InvalidNodeID
+	}
+	filter := bson.M{"_id": objID}
+	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeOut)
 	defer cancel()
 	result, err := n.collection.DeleteOne(ctx, filter)
 	if err != nil {
-		return errs.ErrDatabase.From(err)
+		return errs.DeleteFailed
 	}
 	if result.DeletedCount == 0 {
-		return errs.ErrNotFound
+		return errs.NodeNotFound
 	}
 	return nil
 }
 
-func (n *NodeDB) DeleteNodeManyByID(hexId []string) error {
-	var objID []primitive.ObjectID
-	for _, i := range hexId {
-		obj, err := primitive.ObjectIDFromHex(i)
-		if err != nil {
-			return errs.ErrWrongFormat.From(err)
-		}
-		objID = append(objID, obj)
-	}
-	filter := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: objID}}}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeout)
+func (n *NodeDB) DeleteManyNode(hexId []string) error {
+	objIDs := HexIDToObjID(hexId)
+	filter := bson.M{"_id": bson.M{"$in": objIDs}}
+	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeOut)
 	defer cancel()
-	result, err := n.collection.DeleteMany(ctx, filter)
+	_, err := n.collection.DeleteMany(ctx, filter)
 	if err != nil {
-		return errs.ErrDatabase.From(err)
-	}
-	if result.DeletedCount == 0 {
-		return errs.ErrNotFound
+		return errs.DeleteFailed
 	}
 	return nil
 }
 
-func (n *NodeDB) CleanUp() int {
-	filter := bson.D{{}}
-	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeout)
-	defer cancel()
-	result, err := n.collection.DeleteMany(ctx, filter)
-	if err != nil {
-		log.Fatalf("Error while clean up node collection, %v", err)
-	}
-	log.Println("Clean up node collection", result.DeletedCount)
-	return int(result.DeletedCount)
+func (n *NodeDB) Clear() {
+	n.collection.DeleteMany(context.Background(), bson.M{})
 }

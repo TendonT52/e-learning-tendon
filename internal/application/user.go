@@ -24,7 +24,7 @@ func NewUserService(userDB repos.UserDB) {
 
 func (us *UserService) SignUp(firstName, lastName, email, password string) (core.User, core.Token, error) {
 	_, err := us.userDB.GetUserByEmail(email)
-	if !errors.Is(err, errs.ErrNotFound) {
+	if !errors.Is(err, errs.NotFound) {
 		return core.User{},
 			core.Token{},
 			errs.NewHttpError(

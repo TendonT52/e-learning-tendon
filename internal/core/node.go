@@ -11,3 +11,4 @@ type Node struct {
 	CreateBy  string
 	UpdatedAt time.Time
 }
+
