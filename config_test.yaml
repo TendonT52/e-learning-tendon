@@ -1,0 +1,38 @@
+app:
+    url: 127.0.0.1
+    name: tendonAPI
+    port: 8080
+
+mongo:
+    name: tendon
+    connection: mongodb://admin:password@localhost:27017
+    insertTimeOut: 500ms
+    findTimeOut: 500ms
+    updateTimeOut: 500ms
+    deleteTimeOut: 500ms
+    collection:
+        user:
+            name: user_test
+        jwt:
+            name: jwt_test
+        course:
+            name: course_test
+        lesson:
+            name: lesson_test
+        node:
+            name: node_test
+
+token:
+    issuer: tendonBackend
+    access:
+        secret: 7D6E76C43F021954C475152AB585D723162F58F5F3818DCF059D17B68F8B204B
+        expire: 300s
+        cookie:
+            secure: false
+            httpOnly: false
+    refresh:
+        secret: 36EAB3EB9D44FC17197427323446029B45C676495F64E66D311F99451425FAF5
+        expire: 120h
+        cookie:
+            secure: false
+            httpOnly: false

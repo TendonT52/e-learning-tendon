@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/TendonT52/e-learning-tendon/internal/app"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +19,7 @@ func Auth() gin.HandlerFunc {
 			)
 			return
 		}
-		claim, err := appService.jwtService.ValidateToken(accessToken)
+		claim, err := app.ValidateToken(accessToken)
 		if err != nil {
 			abortWithHttpError(ctx, err)
 			return

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/TendonT52/e-learning-tendon/handlers/validateService"
+	"github.com/TendonT52/e-learning-tendon/internal/app"
 	"github.com/TendonT52/e-learning-tendon/internal/core"
 	"github.com/gin-gonic/gin"
 )
@@ -34,18 +35,30 @@ func SignUpHandler(ctx *gin.Context) {
 		LastName:  req.LastName,
 		Email:     req.Email,
 	}
-	token, err := appService.userService.SignUp(user, req.Password)
+	token, err := app.SignUp(&user, req.Password)
 	if err != nil {
 		abortWithHttpError(ctx, err)
 		return
 	}
-	ctx.SetCookie("token",
+
+	ctx.SetCookie("access_token",
 		token.Access,
-		int(application.JwtServiceInstance.GetCookieDuration().Seconds()),
+		int(config.AccessTokenDuration),
 		"/auth",
-		hc.config.Url,
-		hc.config.CookieSecure,
-		hc.config.CookieHttpOnly)
+		config.Url,
+		config.AccessCookieSecure,
+		config.AccessCookieHttpOnly,
+	)
+
+	ctx.SetCookie("refresh_token",
+		token.Refresh,
+		int(config.RefreshTokenDuration),
+		"/refresh",
+		config.Url,
+		config.RefreshCookieSecure,
+		config.RefreshCookieHttpOnly,
+	)
+
 	ctx.AbortWithStatusJSON(
 		http.StatusCreated,
 		gin.H{

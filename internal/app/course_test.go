@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("test course db", Ordered, func() {
+var _ = Describe("test course db", func() {
 	BeforeEach(func() {
 		db.NewClient("mongodb://admin:password@localhost:27017",
 			db.MongoConfig{
@@ -250,7 +250,7 @@ var _ = Describe("test course db", Ordered, func() {
 		})
 	})
 
-	AfterAll(func() {
+	AfterEach(func() {
 		db.DisconnectMongo()
 	})
 })

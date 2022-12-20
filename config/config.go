@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"fmt"
@@ -7,13 +7,10 @@ import (
 	"github.com/TendonT52/e-learning-tendon/db"
 	"github.com/TendonT52/e-learning-tendon/handlers"
 	"github.com/TendonT52/e-learning-tendon/internal/app"
-	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
 
-var router *gin.Engine
-
-func loadConfig() {
+func LoadConfig() {
 	log.Println("Loading config...")
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -25,8 +22,20 @@ func loadConfig() {
 	}
 	log.Println("Load config success")
 }
+func LoadConfigTest() {
+	log.Println("Loading config...")
+	viper.SetConfigName("config_test")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("..")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("fatal error config file: %w", err))
+	}
+	log.Println("Load config success")
+}
 
-func setupInstance() {
+func SetupInstance() {
 
 	db.NewClient(viper.GetString("mongo.connection"), db.MongoConfig{
 		InsertTimeOut: viper.GetDuration("mongo.insertTimeOut"),
@@ -37,16 +46,16 @@ func setupInstance() {
 	db.NewDB(viper.GetString("mongo.name"))
 	db.NewUserDB(viper.GetString("mongo.collection.user.name"))
 	db.NewJwtDB(viper.GetString("mongo.collection.jwt.name"))
-	db.NewCourseDB(viper.GetString("mongo.collection.curriculum.name"))
+	db.NewCourseDB(viper.GetString("mongo.collection.course.name"))
 	db.NewLessonDB(viper.GetString("mongo.collection.lesson.name"))
 	db.NewNodeDB(viper.GetString("mongo.collection.node.name"))
 
 	appConfig := app.AppConfig{
 		AppName:              viper.GetString("token.issuer"),
-		AccessSecret:         viper.GetString("token.jwtAccessSecret"),
-		RefreshSecret:        viper.GetString("token.jwtRefreshSecret"),
-		AccesstokenDuration:  viper.GetDuration("token.accessTokenExpire"),
-		RefreshtokenDuration: viper.GetDuration("token.refreshTokenExpire"),
+		AccessSecret:         viper.GetString("token.access.secret"),
+		RefreshSecret:        viper.GetString("token.refresh.secret"),
+		AccesstokenDuration:  viper.GetDuration("token.access.expire"),
+		RefreshtokenDuration: viper.GetDuration("token.refresh.expire"),
 	}
 
 	reposConfig := app.ReposInstance{
@@ -58,33 +67,17 @@ func setupInstance() {
 	}
 
 	app.NewApp(appConfig, reposConfig)
-}
 
-func setupRouter() {
-	router = gin.New()
-	router.Use(gin.Logger())
-	handlers.NewHandlerConfig(
-		application.UserServiceInstance,
-		application.JwtServiceInstance,
+	handlers.SetConfig(
 		handlers.Config{
-			Url:            viper.GetString("app.url"),
-			CookieSecure:   viper.GetBool("cookie.secure"),
-			CookieHttpOnly: viper.GetBool("cookire.httpOnly"),
-		})
-	v1 := router.Group("/api/v1")
-	{
-		v1.POST("/user/sign-up", handlers.HandlerConfigInstance.SignUpHandler)
-		v1.POST("/user/sign-in", handlers.HandlerConfigInstance.SignInHandler)
-		auth := v1.Group("/auth", handlers.HandlerConfigInstance.Auth())
-		{
-			auth.POST("/user/sign-out", handlers.HandlerConfigInstance.SignOutHandler)
-		}
-	}
-}
-
-func main() {
-	loadConfig()
-	setupInstance()
-	setupRouter()
-	router.Run(":8080")
+			Port:                  viper.GetString("app.port"),
+			Url:                   viper.GetString("app.url"),
+			AccessCookieSecure:    viper.GetBool("token.access.cookie.secure"),
+			AccessCookieHttpOnly:  viper.GetBool("token.access.cookie.httpOnly"),
+			AccessTokenDuration:   viper.GetDuration("token.access.expire"),
+			RefreshCookieSecure:   viper.GetBool("token.refresh.cookie.secure"),
+			RefreshCookieHttpOnly: viper.GetBool("token.refresh.cookie.httpOnly"),
+			RefreshTokenDuration:  viper.GetDuration("token.refresh.expire"),
+		},
+	)
 }

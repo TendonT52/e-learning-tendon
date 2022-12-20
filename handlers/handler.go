@@ -1,11 +1,20 @@
 package handlers
 
-import "github.com/TendonT52/e-learning-tendon/internal/ports/services"
+import "time"
 
+var config Config
 
-var appService AppService
+type Config struct {
+	Port 				string
+	Url                   string
+	AccessCookieSecure    bool
+	AccessCookieHttpOnly  bool
+	AccessTokenDuration   time.Duration
+	RefreshCookieSecure   bool
+	RefreshCookieHttpOnly bool
+	RefreshTokenDuration  time.Duration
+}
 
-type AppService struct {
-	userService services.UserService
-	jwtService  services.JwtService
+func SetConfig(con Config) {
+	config = con
 }
