@@ -34,7 +34,7 @@ var _ = Describe("test user db", Ordered, func() {
 					Email:          "testEmail",
 					HashedPassword: "testHashPassword",
 					Role:           core.Student,
-					Curricula:      []string{},
+					Courses:        []string{},
 				}
 				err := db.UserDBInstance.InsertUser(&user)
 				Expect(err).ShouldNot(HaveOccurred())
@@ -61,7 +61,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail1",
 						HashedPassword: "testHashPassword1",
 						Role:           core.Student,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName2",
@@ -69,7 +69,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail2",
 						HashedPassword: "testHashPassword2",
 						Role:           core.Teacher,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName3",
@@ -77,7 +77,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail3",
 						HashedPassword: "testHashPassword3",
 						Role:           core.Admin,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 				}
 				err := db.UserDBInstance.InsertManyUser(users)
@@ -90,7 +90,7 @@ var _ = Describe("test user db", Ordered, func() {
 						"Email":          Equal("testEmail1"),
 						"HashedPassword": Equal("testHashPassword1"),
 						"Role":           Equal(core.Student),
-						"Curricula":      Equal([]string{}),
+						"Courses":      Equal([]string{}),
 						"UpdatedAt":      Not(BeNil()),
 					}),
 					MatchFields(IgnoreExtras, Fields{
@@ -100,7 +100,7 @@ var _ = Describe("test user db", Ordered, func() {
 						"Email":          Equal("testEmail2"),
 						"HashedPassword": Equal("testHashPassword2"),
 						"Role":           Equal(core.Teacher),
-						"Curricula":      Equal([]string{}),
+						"Courses":      Equal([]string{}),
 						"UpdatedAt":      Not(BeNil()),
 					}),
 					MatchFields(IgnoreExtras, Fields{
@@ -110,7 +110,7 @@ var _ = Describe("test user db", Ordered, func() {
 						"Email":          Equal("testEmail3"),
 						"HashedPassword": Equal("testHashPassword3"),
 						"Role":           Equal(core.Admin),
-						"Curricula":      Equal([]string{}),
+						"Courses":      Equal([]string{}),
 						"UpdatedAt":      Not(BeNil()),
 					}),
 				))
@@ -128,7 +128,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail1",
 						HashedPassword: "testHashPassword1",
 						Role:           core.Student,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName2",
@@ -136,7 +136,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail2",
 						HashedPassword: "testHashPassword2",
 						Role:           core.Teacher,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName3",
@@ -144,7 +144,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail3",
 						HashedPassword: "testHashPassword3",
 						Role:           core.Admin,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 				}
 				err := db.UserDBInstance.InsertManyUser(users)
@@ -161,7 +161,7 @@ var _ = Describe("test user db", Ordered, func() {
 					"Email":          Equal("testEmail2"),
 					"HashedPassword": Equal("testHashPassword2"),
 					"Role":           Equal(core.Teacher),
-					"Curricula":      Equal([]string{}),
+					"Courses":      Equal([]string{}),
 					"UpdatedAt":      Not(BeNil()),
 				}))
 			})
@@ -186,7 +186,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail1",
 						HashedPassword: "testHashPassword1",
 						Role:           core.Student,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName2",
@@ -194,7 +194,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail2",
 						HashedPassword: "testHashPassword2",
 						Role:           core.Teacher,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName3",
@@ -202,7 +202,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail3",
 						HashedPassword: "testHashPassword3",
 						Role:           core.Admin,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 				}
 				err := db.UserDBInstance.InsertManyUser(users)
@@ -222,7 +222,7 @@ var _ = Describe("test user db", Ordered, func() {
 					"Email":          Equal("testEmail2"),
 					"HashedPassword": Equal("testHashPassword2"),
 					"Role":           Equal(core.Teacher),
-					"Curricula":      Equal([]string{}),
+					"Courses":      Equal([]string{}),
 					"UpdatedAt":      Not(BeNil()),
 				}))
 			})
@@ -251,7 +251,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail1",
 						HashedPassword: "testHashPassword1",
 						Role:           core.Student,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName2",
@@ -259,7 +259,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail2",
 						HashedPassword: "testHashPassword2",
 						Role:           core.Teacher,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName3",
@@ -267,7 +267,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail3",
 						HashedPassword: "testHashPassword3",
 						Role:           core.Admin,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 				}
 				err := db.UserDBInstance.InsertManyUser(users)
@@ -288,7 +288,7 @@ var _ = Describe("test user db", Ordered, func() {
 					"Email":          Equal("testEmail1"),
 					"HashedPassword": Equal("testHashPassword1"),
 					"Role":           Equal(core.Student),
-					"Curricula":      Equal([]string{}),
+					"Courses":      Equal([]string{}),
 					"UpdatedAt":      Not(BeNil()),
 				}))
 				Expect(users[1]).To(MatchFields(IgnoreExtras, Fields{
@@ -298,7 +298,7 @@ var _ = Describe("test user db", Ordered, func() {
 					"Email":          Equal("testEmail2"),
 					"HashedPassword": Equal("testHashPassword2"),
 					"Role":           Equal(core.Teacher),
-					"Curricula":      Equal([]string{}),
+					"Courses":      Equal([]string{}),
 					"UpdatedAt":      Not(BeNil()),
 				}))
 				Expect(users[2]).To(MatchFields(IgnoreExtras, Fields{
@@ -308,7 +308,7 @@ var _ = Describe("test user db", Ordered, func() {
 					"Email":          Equal("testEmail3"),
 					"HashedPassword": Equal("testHashPassword3"),
 					"Role":           Equal(core.Admin),
-					"Curricula":      Equal([]string{}),
+					"Courses":      Equal([]string{}),
 					"UpdatedAt":      Not(BeNil()),
 				}))
 			})
@@ -322,7 +322,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail1",
 						HashedPassword: "testHashPassword1",
 						Role:           core.Student,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName2",
@@ -330,7 +330,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail2",
 						HashedPassword: "testHashPassword2",
 						Role:           core.Teacher,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 				}
 				err := db.UserDBInstance.InsertManyUser(users)
@@ -362,7 +362,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail1",
 						HashedPassword: "testHashPassword1",
 						Role:           core.Student,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName2",
@@ -370,7 +370,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail2",
 						HashedPassword: "testHashPassword2",
 						Role:           core.Teacher,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName3",
@@ -378,7 +378,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail3",
 						HashedPassword: "testHashPassword3",
 						Role:           core.Admin,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 				}
 				err := db.UserDBInstance.InsertManyUser(users)
@@ -396,7 +396,7 @@ var _ = Describe("test user db", Ordered, func() {
 					Email:          "testUpdatedEmail2",
 					HashedPassword: "testUpdatedHashPassword2",
 					Role:           core.Teacher,
-					Curricula:      []string{"testCurriculumID2"},
+					Courses:        []string{"testCurriculumID2"},
 				}
 				err := db.UserDBInstance.UpdateUser(&user)
 				Expect(err).ShouldNot(HaveOccurred())
@@ -407,7 +407,7 @@ var _ = Describe("test user db", Ordered, func() {
 					"Email":          Equal("testUpdatedEmail2"),
 					"HashedPassword": Equal("testUpdatedHashPassword2"),
 					"Role":           Equal(core.Teacher),
-					"Curricula":      Equal([]string{"testCurriculumID2"}),
+					"Courses":      Equal([]string{"testCurriculumID2"}),
 					"UpdatedAt":      Not(BeNil()),
 				}))
 			})
@@ -425,7 +425,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail1",
 						HashedPassword: "testHashPassword1",
 						Role:           core.Student,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName2",
@@ -433,7 +433,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail2",
 						HashedPassword: "testHashPassword2",
 						Role:           core.Teacher,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName3",
@@ -441,7 +441,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail3",
 						HashedPassword: "testHashPassword3",
 						Role:           core.Admin,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 				}
 				err := db.UserDBInstance.InsertManyUser(users)
@@ -472,7 +472,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail1",
 						HashedPassword: "testHashPassword1",
 						Role:           core.Student,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName2",
@@ -480,7 +480,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail2",
 						HashedPassword: "testHashPassword2",
 						Role:           core.Teacher,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 					{
 						FirstName:      "testFirstName3",
@@ -488,7 +488,7 @@ var _ = Describe("test user db", Ordered, func() {
 						Email:          "testEmail3",
 						HashedPassword: "testHahPassword3",
 						Role:           core.Admin,
-						Curricula:      []string{},
+						Courses:        []string{},
 					},
 				}
 				err := db.UserDBInstance.InsertManyUser(users)

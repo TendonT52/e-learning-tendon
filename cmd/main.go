@@ -6,8 +6,7 @@ import (
 
 	"github.com/TendonT52/e-learning-tendon/db"
 	"github.com/TendonT52/e-learning-tendon/handlers"
-	"github.com/TendonT52/e-learning-tendon/internal/application"
-	"github.com/TendonT52/e-learning-tendon/internal/core"
+	"github.com/TendonT52/e-learning-tendon/internal/app"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -28,23 +27,37 @@ func loadConfig() {
 }
 
 func setupInstance() {
+
 	db.NewClient(viper.GetString("mongo.connection"), db.MongoConfig{
-		CreateTimeOut: viper.GetDuration("mongo.insertTimeOut"),
-		FindTimeout:   viper.GetDuration("mongo.findTimeOut"),
-		UpdateTimeout: viper.GetDuration("mongo.updateTimeOut"),
-		DeleteTimeout: viper.GetDuration("mongo.deleteTimeOut"),
+		InsertTimeOut: viper.GetDuration("mongo.insertTimeOut"),
+		FindTimeOut:   viper.GetDuration("mongo.findTimeOut"),
+		UpdateTimeOut: viper.GetDuration("mongo.updateTimeOut"),
+		DeleteTimeOut: viper.GetDuration("mongo.deleteTimeOut"),
 	})
 	db.NewDB(viper.GetString("mongo.name"))
 	db.NewUserDB(viper.GetString("mongo.collection.user.name"))
-	db.NewJwtTokenDB(viper.GetString("mongo.collection.jwt.name"))
-	application.NewUserService(db.UserDBInstance)
-	application.NewJwtService(db.JwtDBInstance, core.JwtConfig{
+	db.NewJwtDB(viper.GetString("mongo.collection.jwt.name"))
+	db.NewCourseDB(viper.GetString("mongo.collection.curriculum.name"))
+	db.NewLessonDB(viper.GetString("mongo.collection.lesson.name"))
+	db.NewNodeDB(viper.GetString("mongo.collection.node.name"))
+
+	appConfig := app.AppConfig{
 		AppName:              viper.GetString("token.issuer"),
 		AccessSecret:         viper.GetString("token.jwtAccessSecret"),
 		RefreshSecret:        viper.GetString("token.jwtRefreshSecret"),
 		AccesstokenDuration:  viper.GetDuration("token.accessTokenExpire"),
 		RefreshtokenDuration: viper.GetDuration("token.refreshTokenExpire"),
-	})
+	}
+
+	reposConfig := app.ReposInstance{
+		UserDB:   db.UserDBInstance,
+		JwtDB:    db.JwtDBInstance,
+		CourseDB: db.CourseDBInstance,
+		LessonDB: db.LessonDBInstance,
+		NodeDB:   db.NodeDBInstance,
+	}
+
+	app.NewApp(appConfig, reposConfig)
 }
 
 func setupRouter() {

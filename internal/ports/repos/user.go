@@ -5,7 +5,12 @@ import (
 )
 
 type UserDB interface {
-	InsertUser(firstName, lastName, email, hashPassword, role string) (core.User, error)
-	GetUserByEmail(email string) (core.User, error)
-	GetUserById(id string) (core.User, error)
+	InsertUser(user *core.User) error
+	InsertManyUser(users []core.User) error
+	FindUserByEmail(email string) (core.User, error)
+	FindUser(hexID string) (core.User, error)
+	FindManyUser(hexIDs []string) ([]core.User, error)
+	UpdateUser(user *core.User) error
+	DeleteUser(hexID string) error
+	DeleteManyUser(hexIDs []string) error
 }

@@ -20,19 +20,19 @@ var _ = Describe("Insert node to db", Ordered, func() {
 				DeleteTimeOut: time.Minute,
 			})
 		db.NewDB("tendon")
-		db.NewCurriculumDB("curricula_test")
-		db.CurriculumDBInstance.Clear()
+		db.NewCourseDB("curricula_test")
+		db.CourseDBInstance.Clear()
 	})
 	Context("Insert one curriculum", func() {
 		It("Should insert one curriculum", func() {
-			curriculum := core.Curriculum{
+			curriculum := core.Course{
 				Name:        "test",
 				Description: "test",
 				Access:      core.PublicAccess,
 				CreateBy:    "5f9f1b5b5d1c3b0b8c1c1c1c",
 				Lessons:     []string{"5f9f1b5b5d1c3b0b8c1c1c1c"},
 			}
-			err := db.CurriculumDBInstance.InsertCurriculum(&curriculum)
+			err := db.CourseDBInstance.InsertCourse(&curriculum)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(curriculum).Should(MatchFields(IgnoreExtras, Fields{
 				"ID":        Not(BeEmpty()),
@@ -43,7 +43,7 @@ var _ = Describe("Insert node to db", Ordered, func() {
 
 	Context("Insert many curriculum", func() {
 		It("Should insert many curriculum", func() {
-			curriculums := []core.Curriculum{
+			curriculums := []core.Course{
 				{
 					Name:        "test",
 					Description: "test",
@@ -59,7 +59,7 @@ var _ = Describe("Insert node to db", Ordered, func() {
 					Lessons:     []string{"5f9f1b5b5d1c3b0b8c1c1c1c"},
 				},
 			}
-			err := db.CurriculumDBInstance.InsertManyCurriculum(curriculums)
+			err := db.CourseDBInstance.InsertManyCourse(curriculums)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(curriculums).Should(ConsistOf(
 				MatchFields(IgnoreExtras, Fields{
@@ -77,7 +77,7 @@ var _ = Describe("Insert node to db", Ordered, func() {
 	Context("find curriculum", func() {
 		curriculumIDs := make([]string, 3)
 		BeforeEach(func() {
-			curricula := []core.Curriculum{
+			curricula := []core.Course{
 				{
 					Name:        "test1",
 					Description: "test1",
@@ -100,14 +100,14 @@ var _ = Describe("Insert node to db", Ordered, func() {
 					Lessons:     []string{"5f9f1b5b5d1c3b0b8c1c1c1c"},
 				},
 			}
-			err := db.CurriculumDBInstance.InsertManyCurriculum(curricula)
+			err := db.CourseDBInstance.InsertManyCourse(curricula)
 			Expect(err).ShouldNot(HaveOccurred())
 			for i := range curricula {
 				curriculumIDs[i] = curricula[i].ID
 			}
 		})
 		It("Should find curriculum by id", func() {
-			curriculum, err := db.CurriculumDBInstance.FindCurriculum(curriculumIDs[0])
+			curriculum, err := db.CourseDBInstance.FindCourse(curriculumIDs[0])
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(curriculum).Should(MatchFields(IgnoreExtras, Fields{
 				"ID":        Equal(curriculumIDs[0]),
@@ -123,7 +123,7 @@ var _ = Describe("Insert node to db", Ordered, func() {
 	Context("find many curricula", func() {
 		curriculumIDs := make([]string, 3)
 		BeforeEach(func() {
-			curricula := []core.Curriculum{
+			curricula := []core.Course{
 				{
 					Name:        "test1",
 					Description: "test1",
@@ -146,14 +146,14 @@ var _ = Describe("Insert node to db", Ordered, func() {
 					Lessons:     []string{"5f9f1b5b5d1c3b0b8c1c1c1c"},
 				},
 			}
-			err := db.CurriculumDBInstance.InsertManyCurriculum(curricula)
+			err := db.CourseDBInstance.InsertManyCourse(curricula)
 			Expect(err).ShouldNot(HaveOccurred())
 			for i := range curricula {
 				curriculumIDs[i] = curricula[i].ID
 			}
 		})
 		It("Should find many curricula by ids", func() {
-			curricula, err := db.CurriculumDBInstance.FindManyCurriculum(curriculumIDs)
+			curricula, err := db.CourseDBInstance.FindManyCourse(curriculumIDs)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(curricula).Should(ConsistOf(
 				MatchFields(IgnoreExtras, Fields{
@@ -187,7 +187,7 @@ var _ = Describe("Insert node to db", Ordered, func() {
 	Context("update curriculum", func() {
 		curriculumIDs := make([]string, 3)
 		BeforeEach(func() {
-			curricula := []core.Curriculum{
+			curricula := []core.Course{
 				{
 					Name:        "test1",
 					Description: "test1",
@@ -210,14 +210,14 @@ var _ = Describe("Insert node to db", Ordered, func() {
 					Lessons:     []string{"5f9f1b5b5d1c3b0b8c1c1c1c"},
 				},
 			}
-			err := db.CurriculumDBInstance.InsertManyCurriculum(curricula)
+			err := db.CourseDBInstance.InsertManyCourse(curricula)
 			Expect(err).ShouldNot(HaveOccurred())
 			for i := range curricula {
 				curriculumIDs[i] = curricula[i].ID
 			}
 		})
 		It("Should update curriculum", func() {
-			curriculum := core.Curriculum{
+			curriculum := core.Course{
 				ID:          curriculumIDs[0],
 				Name:        "update test1",
 				Description: "update test1",
@@ -225,18 +225,18 @@ var _ = Describe("Insert node to db", Ordered, func() {
 				CreateBy:    "5f9f1b5b5d1c3b0b8c1c1c1c",
 				Lessons:     []string{"5f9f1b5b5d1c3b0b8c1c1c1c"},
 			}
-			err := db.CurriculumDBInstance.UpdateCurriculum(&curriculum)
+			err := db.CourseDBInstance.UpdateCourse(&curriculum)
 			Expect(err).ShouldNot(HaveOccurred())
-			curriculum, err = db.CurriculumDBInstance.FindCurriculum(curriculumIDs[0])
+			curriculum, err = db.CourseDBInstance.FindCourse(curriculumIDs[0])
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(curriculum).Should(MatchFields(IgnoreExtras, Fields{
-				"ID":           Equal(curriculumIDs[0]),
-				"Name":         Equal("update test1"),
+				"ID":          Equal(curriculumIDs[0]),
+				"Name":        Equal("update test1"),
 				"Description": Equal("update test1"),
-				"Access":       Equal(core.PublicAccess),
-				"CreateBy":     Equal("5f9f1b5b5d1c3b0b8c1c1c1c"),
-				"Lessons":      Equal([]string{"5f9f1b5b5d1c3b0b8c1c1c1c"}),
-				"UpdatedAt":    Not(BeNil()),
+				"Access":      Equal(core.PublicAccess),
+				"CreateBy":    Equal("5f9f1b5b5d1c3b0b8c1c1c1c"),
+				"Lessons":     Equal([]string{"5f9f1b5b5d1c3b0b8c1c1c1c"}),
+				"UpdatedAt":   Not(BeNil()),
 			}))
 		})
 	})
@@ -244,7 +244,7 @@ var _ = Describe("Insert node to db", Ordered, func() {
 	Context("delete curriculum", func() {
 		curriculumIDs := make([]string, 3)
 		BeforeEach(func() {
-			curricula := []core.Curriculum{
+			curricula := []core.Course{
 				{
 					Name:        "test1",
 					Description: "test1",
@@ -267,16 +267,16 @@ var _ = Describe("Insert node to db", Ordered, func() {
 					Lessons:     []string{"5f9f1b5b5d1c3b0b8c1c1c1c"},
 				},
 			}
-			err := db.CurriculumDBInstance.InsertManyCurriculum(curricula)
+			err := db.CourseDBInstance.InsertManyCourse(curricula)
 			Expect(err).ShouldNot(HaveOccurred())
 			for i := range curricula {
 				curriculumIDs[i] = curricula[i].ID
 			}
 		})
 		It("Should delete curriculum", func() {
-			err := db.CurriculumDBInstance.DeleteCurriculum(curriculumIDs[0])
+			err := db.CourseDBInstance.DeleteCourse(curriculumIDs[0])
 			Expect(err).ShouldNot(HaveOccurred())
-			curriculum, err := db.CurriculumDBInstance.FindCurriculum(curriculumIDs[0])
+			curriculum, err := db.CourseDBInstance.FindCourse(curriculumIDs[0])
 			Expect(err).Should(HaveOccurred())
 			Expect(curriculum).Should(BeZero())
 		})
@@ -285,7 +285,7 @@ var _ = Describe("Insert node to db", Ordered, func() {
 	Context("delete may curricula", func() {
 		curriculumIDs := make([]string, 3)
 		BeforeEach(func() {
-			curricula := []core.Curriculum{
+			curricula := []core.Course{
 				{
 					Name:        "test1",
 					Description: "test1",
@@ -308,16 +308,16 @@ var _ = Describe("Insert node to db", Ordered, func() {
 					Lessons:     []string{"5f9f1b5b5d1c3b0b8c1c1c1c"},
 				},
 			}
-			err := db.CurriculumDBInstance.InsertManyCurriculum(curricula)
+			err := db.CourseDBInstance.InsertManyCourse(curricula)
 			Expect(err).ShouldNot(HaveOccurred())
 			for i := range curricula {
 				curriculumIDs[i] = curricula[i].ID
 			}
 		})
 		It("Should delete may curricula", func() {
-			err := db.CurriculumDBInstance.DeleteManyCurriculum(curriculumIDs)
+			err := db.CourseDBInstance.DeleteManyCourse(curriculumIDs)
 			Expect(err).ShouldNot(HaveOccurred())
-			curricula, err := db.CurriculumDBInstance.FindManyCurriculum(curriculumIDs)
+			curricula, err := db.CourseDBInstance.FindManyCourse(curriculumIDs)
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(curricula).Should(HaveLen(0))
 		})
@@ -327,4 +327,3 @@ var _ = Describe("Insert node to db", Ordered, func() {
 		db.DisconnectMongo()
 	})
 })
-

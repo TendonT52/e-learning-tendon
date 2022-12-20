@@ -11,51 +11,51 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var CurriculumDBInstance *curriculumDB
+var CourseDBInstance *courseDB
 
-type curriculumDB struct {
+type courseDB struct {
 	collection *mongo.Collection
 }
 
-func NewCurriculumDB(collectionName string) {
-	CurriculumDBInstance = &curriculumDB{
+func NewCourseDB(collectionName string) {
+	CourseDBInstance = &courseDB{
 		db.Collection(collectionName),
 	}
 }
 
-func (c *curriculumDB) InsertCurriculum(curriculum *core.Curriculum) (err error) {
-	ObjId, err := primitive.ObjectIDFromHex(curriculum.CreateBy)
+func (c *courseDB) InsertCourse(course *core.Course) (err error) {
+	ObjId, err := primitive.ObjectIDFromHex(course.CreateBy)
 	if err != nil {
 		return errs.InvalidUserID
 	}
-	curriculumDoc := curriculumDoc{
+	courseDoc := courseDoc{
 		ID:          primitive.NewObjectID(),
-		Name:        curriculum.Name,
-		Description: curriculum.Description,
-		Access:      curriculum.Access,
+		Name:        course.Name,
+		Description: course.Description,
+		Access:      course.Access,
 		CreateBy:    ObjId,
 		UpdatedAt:   primitive.NewDateTimeFromTime(time.Now()),
-		Lessons:     HexIDToObjID(curriculum.Lessons),
+		Lessons:     HexIDToObjID(course.Lessons),
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), config.InsertTimeOut)
 	defer cancel()
-	_, err = c.collection.InsertOne(ctx, curriculumDoc)
+	_, err = c.collection.InsertOne(ctx, courseDoc)
 	if err != nil {
 		return errs.InsertFailed
 	}
-	curriculum.ID = curriculumDoc.ID.Hex()
-	curriculum.UpdatedAt = curriculumDoc.UpdatedAt.Time()
+	course.ID = courseDoc.ID.Hex()
+	course.UpdatedAt = courseDoc.UpdatedAt.Time()
 	return nil
 }
 
-func (c *curriculumDB) InsertManyCurriculum(curriculums []core.Curriculum) (err error) {
-	curriculumDocs := make([]interface{}, len(curriculums))
-	for i, curriculum := range curriculums {
+func (c *courseDB) InsertManyCourse(courses []core.Course) (err error) {
+	curriculumDocs := make([]interface{}, len(courses))
+	for i, curriculum := range courses {
 		ObjId, err := primitive.ObjectIDFromHex(curriculum.CreateBy)
 		if err != nil {
 			return errs.InvalidUserID
 		}
-		curriculumDocs[i] = curriculumDoc{
+		curriculumDocs[i] = courseDoc{
 			ID:          primitive.NewObjectID(),
 			Name:        curriculum.Name,
 			Description: curriculum.Description,
@@ -71,34 +71,34 @@ func (c *curriculumDB) InsertManyCurriculum(curriculums []core.Curriculum) (err 
 	if err != nil {
 		return errs.InsertFailed
 	}
-	for i := range curriculums {
-		curriculums[i].ID = curriculumDocs[i].(curriculumDoc).ID.Hex()
-		curriculums[i].UpdatedAt = curriculumDocs[i].(curriculumDoc).UpdatedAt.Time()
+	for i := range courses {
+		courses[i].ID = curriculumDocs[i].(courseDoc).ID.Hex()
+		courses[i].UpdatedAt = curriculumDocs[i].(courseDoc).UpdatedAt.Time()
 	}
 
 	return nil
 }
 
-func (c *curriculumDB) FindCurriculum(id string) (core.Curriculum, error) {
+func (c *courseDB) FindCourse(id string) (core.Course, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return core.Curriculum{}, errs.InvalidCurriculumID
+		return core.Course{}, errs.InvalidCourseID
 	}
 	filter := bson.M{"_id": objID}
 	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeOut)
 	defer cancel()
-	var curriculumDoc curriculumDoc
-	err = c.collection.FindOne(ctx, filter).Decode(&curriculumDoc)
+	var courseDoc courseDoc
+	err = c.collection.FindOne(ctx, filter).Decode(&courseDoc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return core.Curriculum{}, errs.CurriculumNotFound
+			return core.Course{}, errs.CourseNotFound
 		}
-		return core.Curriculum{}, errs.FindFailed
+		return core.Course{}, errs.FindFailed
 	}
-	return curriculumDoc.toCurriculum(), nil
+	return courseDoc.toCourse(), nil
 }
 
-func (c *curriculumDB) FindManyCurriculum(hexIDs []string) ([]core.Curriculum, error) {
+func (c *courseDB) FindManyCourse(hexIDs []string) ([]core.Course, error) {
 	objID := HexIDToObjID(hexIDs)
 	filter := bson.M{"_id": bson.M{"$in": objID}}
 	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeOut)
@@ -107,31 +107,30 @@ func (c *curriculumDB) FindManyCurriculum(hexIDs []string) ([]core.Curriculum, e
 	if err != nil {
 		return nil, errs.FindFailed
 	}
-	var curriculumDocs []curriculumDoc
+	var curriculumDocs []courseDoc
 	if err = cursor.All(ctx, &curriculumDocs); err != nil {
 		return nil, errs.FindFailed
 	}
-	curriculums := make([]core.Curriculum, len(curriculumDocs))
+	courses := make([]core.Course, len(curriculumDocs))
 	for i, curriculumDoc := range curriculumDocs {
-		curriculums[i] = curriculumDoc.toCurriculum()
+		courses[i] = curriculumDoc.toCourse()
 	}
-	return curriculums, nil
-
+	return courses, nil
 }
 
-func (c *curriculumDB) UpdateCurriculum(curriculum *core.Curriculum) error {
-	objID, err := primitive.ObjectIDFromHex(curriculum.ID)
+func (c *courseDB) UpdateCourse(course *core.Course) error {
+	objID, err := primitive.ObjectIDFromHex(course.ID)
 	if err != nil {
-		return errs.InvalidCurriculumID
+		return errs.InvalidCourseID
 	}
 	filter := bson.M{"_id": objID}
 	update := bson.M{
 		"$set": bson.M{
-			"name":        curriculum.Name,
-			"description": curriculum.Description,
-			"access":      curriculum.Access,
+			"name":        course.Name,
+			"description": course.Description,
+			"access":      course.Access,
 			"updated_at":  primitive.NewDateTimeFromTime(time.Now()),
-			"lessons":     HexIDToObjID(curriculum.Lessons),
+			"lessons":     HexIDToObjID(course.Lessons),
 		},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), config.UpdateTimeOut)
@@ -141,15 +140,15 @@ func (c *curriculumDB) UpdateCurriculum(curriculum *core.Curriculum) error {
 		return errs.UpdateFailed
 	}
 	if result.MatchedCount == 0 {
-		return errs.CurriculumNotFound
+		return errs.CourseNotFound
 	}
 	return nil
 }
 
-func (c *curriculumDB) DeleteCurriculum(hexId string) error {
+func (c *courseDB) DeleteCourse(hexId string) error {
 	objID, err := primitive.ObjectIDFromHex(hexId)
 	if err != nil {
-		return errs.InvalidCurriculumID
+		return errs.InvalidCourseID
 	}
 	filter := bson.M{"_id": objID}
 	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeOut)
@@ -159,12 +158,12 @@ func (c *curriculumDB) DeleteCurriculum(hexId string) error {
 		return errs.DeleteFailed
 	}
 	if result.DeletedCount == 0 {
-		return errs.CurriculumNotFound
+		return errs.CourseNotFound
 	}
 	return nil
 }
 
-func (c *curriculumDB) DeleteManyCurriculum(hexIds []string) error {
+func (c *courseDB) DeleteManyCourse(hexIds []string) error {
 	objIDs := HexIDToObjID(hexIds)
 	filter := bson.M{"_id": bson.M{"$in": objIDs}}
 	ctx, cancel := context.WithTimeout(context.Background(), config.DeleteTimeOut)
@@ -176,6 +175,6 @@ func (c *curriculumDB) DeleteManyCurriculum(hexIds []string) error {
 	return nil
 }
 
-func (c *curriculumDB) Clear(){
-	c.collection.DeleteMany(context.Background(),bson.M{})
+func (c *courseDB) Clear() {
+	c.collection.DeleteMany(context.Background(), bson.M{})
 }

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/TendonT52/e-learning-tendon/internal/core"
@@ -102,8 +103,17 @@ func (l *lessonDB) FindLesson(hexID string) (core.Lesson, error) {
 }
 
 func (l *lessonDB) FindManyLesson(hexIDs []string) ([]core.Lesson, error) {
-	objID := HexIDToObjID(hexIDs)
-	filter := bson.M{"_id": bson.M{"$in": objID}}
+	objIDs := make([]primitive.ObjectID, len(hexIDs))
+	for i, hexID := range hexIDs {
+		objID, err := primitive.ObjectIDFromHex(hexID)
+		if err != nil {
+			return nil, errs.InvalidLessonID.From(errors.New(
+				"invalid lesson id: " + hexID,
+			))
+		}
+		objIDs[i] = objID
+	}
+	filter := bson.M{"_id": bson.M{"$in": objIDs}}
 	ctx, cancel := context.WithTimeout(context.Background(), config.FindTimeOut)
 	defer cancel()
 	cursor, err := l.collection.Find(ctx, filter)
@@ -111,7 +121,7 @@ func (l *lessonDB) FindManyLesson(hexIDs []string) ([]core.Lesson, error) {
 		return nil, errs.FindFailed
 	}
 	var lessonDocs []lessonDoc
-	if err:= cursor.All(ctx, &lessonDocs); err != nil {
+	if err := cursor.All(ctx, &lessonDocs); err != nil {
 		return nil, errs.FindFailed
 	}
 	lessons := make([]core.Lesson, len(lessonDocs))
@@ -128,11 +138,11 @@ func (l *lessonDB) UpdateLesson(lesson *core.Lesson) error {
 	}
 	filter := bson.M{"_id": objID}
 	update := bson.M{"$set": bson.M{
-		"name":        lesson.Name,
-		"description": lesson.Description,
-		"access":      lesson.Access,
-		"updated_at":  primitive.NewDateTimeFromTime(time.Now()),
-		"nodes":       HexIDToObjID(lesson.Nodes),
+		"name":         lesson.Name,
+		"description":  lesson.Description,
+		"access":       lesson.Access,
+		"updated_at":   primitive.NewDateTimeFromTime(time.Now()),
+		"nodes":        HexIDToObjID(lesson.Nodes),
 		"next_lessons": HexIDToObjID(lesson.NextLessons),
 		"prev_lessons": HexIDToObjID(lesson.PrevLessons),
 	}}
@@ -148,7 +158,6 @@ func (l *lessonDB) UpdateLesson(lesson *core.Lesson) error {
 	lesson.UpdatedAt = time.Now()
 	return nil
 }
-
 
 func (l *lessonDB) DeleteLesson(hexId string) error {
 	objID, err := primitive.ObjectIDFromHex(hexId)

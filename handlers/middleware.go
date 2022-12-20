@@ -3,11 +3,10 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/TendonT52/e-learning-tendon/internal/application"
 	"github.com/gin-gonic/gin"
 )
 
-func (hc *handlerConfig) Auth() gin.HandlerFunc {
+func Auth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		accessToken, err := ctx.Cookie("token")
 		if err != nil {
@@ -19,9 +18,9 @@ func (hc *handlerConfig) Auth() gin.HandlerFunc {
 			)
 			return
 		}
-		claim, err := application.JwtServiceInstance.ValidateToken(accessToken)
+		claim, err := appService.jwtService.ValidateToken(accessToken)
 		if err != nil {
-			hc.AbortWithHttpError(ctx, err)
+			abortWithHttpError(ctx, err)
 			return
 		}
 		ctx.Set("userID", claim.ID)

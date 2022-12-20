@@ -4,11 +4,11 @@ var (
 	UserNotFound        = appError{kind: "user not found"}
 	NodeNotFound        = appError{kind: "node not found"}
 	LessonNotFound      = appError{kind: "lesson not found"}
-	CurriculumNotFound  = appError{kind: "curriculum not found"}
+	CourseNotFound      = appError{kind: "course not found"}
 	InvalidUserID       = appError{kind: "invalid user id"}
 	InvalidNodeID       = appError{kind: "invalid node id"}
 	InvalidLessonID     = appError{kind: "invalid lesson id"}
-	InvalidCurriculumID = appError{kind: "invalid curriculum id"}
+	InvalidCourseID = appError{kind: "invalid course id"}
 
 	IDShouldBeEmpty          = appError{kind: "id should be empty"}
 	CreateByShouldNotBeEmpty = appError{kind: "create by should not be empty"}
@@ -21,8 +21,8 @@ var (
 	DeleteFailed = appError{kind: "delete failed"}
 	FindFailed   = appError{kind: "find failed"}
 
-	InvalidToken = appError{kind: "invalid token"}
-	TokenExpired = appError{kind: "token expired"}
+	InvalidToken  = appError{kind: "invalid token"}
+	TokenExpired  = appError{kind: "token expired"}
 	TokenNotfound = appError{kind: "token not found"}
 )
 

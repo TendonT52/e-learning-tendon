@@ -5,7 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type curriculumDoc struct {
+type courseDoc struct {
 	ID          primitive.ObjectID   `bson:"_id,omitempty"`
 	Name        string               `bson:"name"`
 	Description string               `bson:"description"`
@@ -15,8 +15,8 @@ type curriculumDoc struct {
 	Lessons     []primitive.ObjectID `bson:"lessons"`
 }
 
-func (c curriculumDoc) toCurriculum() core.Curriculum {
-	return core.Curriculum{
+func (c courseDoc) toCourse() core.Course {
+	return core.Course{
 		ID:          c.ID.Hex(),
 		Name:        c.Name,
 		Description: c.Description,

@@ -1,4 +1,4 @@
-package application
+package app
 
 import (
 	"errors"
@@ -7,34 +7,19 @@ import (
 
 	"github.com/TendonT52/e-learning-tendon/internal/core"
 	"github.com/TendonT52/e-learning-tendon/internal/pkg/errs"
-	"github.com/TendonT52/e-learning-tendon/internal/ports/repos"
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var JwtServiceInstance *jwtService
-
-type jwtService struct {
-	jwtDB  repos.JwtDB
-	config core.JwtConfig
+func GetCookieDuration() time.Duration {
+	return appConfig.AccesstokenDuration
 }
 
-func NewJwtService(jwtDB repos.JwtDB, config core.JwtConfig) {
-	JwtServiceInstance = &jwtService{
-		jwtDB:  jwtDB,
-		config: config,
-	}
-}
-
-func (jw *jwtService) GetCookieDuration() time.Duration {
-	return jw.config.AccesstokenDuration
-}
-
-func (jw *jwtService) createToken(userID string) (core.Token, error) {
-	accessToken, err := JwtServiceInstance.generateAccessToken(userID)
+func createToken(userID string) (core.Token, error) {
+	accessToken, err := generateAccessToken(userID)
 	if err != nil {
 		return core.Token{}, err
 	}
-	refreshToken, err := JwtServiceInstance.generateRefreshToken(userID)
+	refreshToken, err := generateRefreshToken(userID)
 	if err != nil {
 		return core.Token{}, err
 	}
@@ -45,16 +30,16 @@ func (jw *jwtService) createToken(userID string) (core.Token, error) {
 	return token, nil
 }
 
-func (js *jwtService) generateAccessToken(userID string) (string, error) {
-	exp := time.Now().Add(js.config.AccesstokenDuration)
+func generateAccessToken(userID string) (string, error) {
+	exp := time.Now().Add(appConfig.AccesstokenDuration)
 	claim := jwt.RegisteredClaims{
 		Subject:   userID,
-		Issuer:    js.config.AppName,
+		Issuer:    appConfig.AppName,
 		ExpiresAt: jwt.NewNumericDate(exp),
 		NotBefore: jwt.NewNumericDate(time.Now()),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	}
-	id, err := js.jwtDB.InsertJwtToken(time.Now().Add(js.config.AccesstokenDuration))
+	id, err := reposInstance.JwtDB.InsertJwt(time.Now().Add(appConfig.AccesstokenDuration))
 	if err != nil {
 		return id, errs.NewHttpError(
 			http.StatusInternalServerError,
@@ -63,7 +48,7 @@ func (js *jwtService) generateAccessToken(userID string) (string, error) {
 	}
 	claim.ID = id
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	ss, err := token.SignedString([]byte(js.config.AccessSecret))
+	ss, err := token.SignedString([]byte(appConfig.AccessSecret))
 	if err != nil {
 		return id, errs.NewHttpError(
 			http.StatusInternalServerError,
@@ -73,16 +58,16 @@ func (js *jwtService) generateAccessToken(userID string) (string, error) {
 	return ss, nil
 }
 
-func (js *jwtService) generateRefreshToken(userID string) (string, error) {
-	exp := time.Now().Add(js.config.RefreshtokenDuration)
+func generateRefreshToken(userID string) (string, error) {
+	exp := time.Now().Add(appConfig.RefreshtokenDuration)
 	claim := jwt.RegisteredClaims{
 		Subject:   userID,
-		Issuer:    js.config.AppName,
+		Issuer:    appConfig.AppName,
 		ExpiresAt: jwt.NewNumericDate(exp),
 		NotBefore: jwt.NewNumericDate(time.Now()),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	}
-	id, err := js.jwtDB.InsertJwtToken(time.Now().Add(js.config.AccesstokenDuration))
+	id, err := reposInstance.JwtDB.InsertJwt(time.Now().Add(appConfig.AccesstokenDuration))
 	if err != nil {
 		return id, errs.NewHttpError(
 			http.StatusInternalServerError,
@@ -91,7 +76,7 @@ func (js *jwtService) generateRefreshToken(userID string) (string, error) {
 	}
 	claim.ID = id
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	ss, err := token.SignedString([]byte(js.config.AccessSecret))
+	ss, err := token.SignedString([]byte(appConfig.AccessSecret))
 	if err != nil {
 		return id, errs.NewHttpError(
 			http.StatusInternalServerError,
@@ -101,13 +86,13 @@ func (js *jwtService) generateRefreshToken(userID string) (string, error) {
 	return ss, nil
 }
 
-func (js *jwtService) ValidateToken(encodedToken string) (jwt.RegisteredClaims, error) {
+func ValidateToken(encodedToken string) (jwt.RegisteredClaims, error) {
 	claim := jwt.RegisteredClaims{}
 	_, err := jwt.ParseWithClaims(
 		encodedToken,
 		&claim,
 		func(token *jwt.Token) (interface{}, error) {
-			return []byte(js.config.AccessSecret), nil
+			return []byte(appConfig.AccessSecret), nil
 		},
 	)
 	if err != nil {
@@ -123,9 +108,9 @@ func (js *jwtService) ValidateToken(encodedToken string) (jwt.RegisteredClaims, 
 			)
 		}
 	}
-	err = js.jwtDB.CheckJwtToken(claim.ID)
+	err = reposInstance.JwtDB.CheckJwt(claim.ID)
 	if err != nil {
-		if errors.Is(err, errs.NotFound) {
+		if errors.Is(err, errs.TokenNotfound) {
 			return claim, errs.NewHttpError(
 				http.StatusConflict,
 				"token already revoke",
@@ -140,14 +125,14 @@ func (js *jwtService) ValidateToken(encodedToken string) (jwt.RegisteredClaims, 
 	return claim, nil
 }
 
-func (js *jwtService) revokeToken(encodedToken string) error {
-	claim, err := js.ValidateToken(encodedToken)
+func revokeToken(encodedToken string) error {
+	claim, err := ValidateToken(encodedToken)
 	if err != nil {
 		return err
 	}
-	err = js.jwtDB.DeleteJwtToken(claim.ID)
+	err = reposInstance.JwtDB.DeleteJwt(claim.ID)
 	if err != nil {
-		if errors.Is(err, errs.NotFound) {
+		if errors.Is(err, errs.TokenNotfound) {
 			return errs.NewHttpError(
 				http.StatusConflict,
 				"token already revoke",
@@ -160,4 +145,20 @@ func (js *jwtService) revokeToken(encodedToken string) error {
 		}
 	}
 	return nil
+}
+
+func RefreshToken(encodedToken string) (core.Token, error) {
+	claim, err := ValidateToken(encodedToken)
+	if err != nil {
+		return core.Token{}, err
+	}
+	err = revokeToken(encodedToken)
+	if err != nil {
+		return core.Token{}, err
+	}
+	token, err := createToken(claim.Subject)
+	if err != nil {
+		return core.Token{}, err
+	}
+	return token, nil
 }

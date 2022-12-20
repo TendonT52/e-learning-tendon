@@ -32,7 +32,7 @@ func (u *userDB) InsertUser(user *core.User) error {
 		Email:          user.Email,
 		HashedPassword: user.HashedPassword,
 		Role:           user.Role,
-		Curricula:      HexIDToObjID(user.Curricula),
+		Curricula:      HexIDToObjID(user.Courses),
 		UpdatedAt:      primitive.NewDateTimeFromTime(time.Now()),
 	}
 	user.ID = userDoc.ID.Hex()
@@ -57,7 +57,7 @@ func (u *userDB) InsertManyUser(users []core.User) error {
 			Email:          user.Email,
 			HashedPassword: user.HashedPassword,
 			Role:           user.Role,
-			Curricula:      HexIDToObjID(user.Curricula),
+			Curricula:      HexIDToObjID(user.Courses),
 			UpdatedAt:      primitive.NewDateTimeFromTime(time.Now()),
 		}
 		users[i].ID = userDoc.ID.Hex()
@@ -151,7 +151,7 @@ func (u *userDB) UpdateUser(user *core.User) error {
 		"email":          user.Email,
 		"hashedPassword": user.HashedPassword,
 		"role":           user.Role,
-		"curricula":      HexIDToObjID(user.Curricula),
+		"curricula":      HexIDToObjID(user.Courses),
 		"updatedAt":      primitive.NewDateTimeFromTime(user.UpdatedAt),
 	}}
 	result, err := u.collection.UpdateByID(context.Background(), userObjID, update)

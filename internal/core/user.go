@@ -11,6 +11,6 @@ type User struct {
 	Email          string
 	HashedPassword string
 	Role           string
-	Curricula      []string
+	Courses        []string
 	UpdatedAt      time.Time
 }

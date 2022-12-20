@@ -24,7 +24,7 @@ func (u *userDoc) toUser() core.User {
 		Email:          u.Email,
 		HashedPassword: u.HashedPassword,
 		Role:           u.Role,
-		Curricula:      ObjIDToHexID(u.Curricula),
+		Courses:        ObjIDToHexID(u.Curricula),
 		UpdatedAt:      u.UpdatedAt.Time(),
 	}
 }
