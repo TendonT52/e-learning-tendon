@@ -37,7 +37,7 @@ func PatchNodeHandler(ctx *gin.Context) {
 	}
 	var reqBody struct {
 		Data string `json:"data" binding:"omitempty"`
-		Type string `json:"description" binding:"omitempty"`
+		Type string `json:"type" binding:"omitempty"`
 	}
 	err = ctx.ShouldBindJSON(&reqBody)
 	if err != nil {
@@ -51,6 +51,9 @@ func PatchNodeHandler(ctx *gin.Context) {
 		)
 		return
 	}
+	node.Data = reqBody.Data
+	node.Type = reqBody.Type
+	node.CreateBy = ctx.GetString("userID")
 	err = app.UpdateNode(&node)
 	if err != nil {
 		abortWithHttpError(ctx, err)
@@ -80,7 +83,7 @@ func DeleteNodeHandler(ctx *gin.Context) {
 func PostNodeHandler(ctx *gin.Context) {
 	var reqBody struct {
 		Data string `json:"data" binding:"omitempty"`
-		Type string `json:"description" binding:"omitempty"`
+		Type string `json:"type" binding:"omitempty"`
 	}
 	err := ctx.ShouldBindJSON(&reqBody)
 	if err != nil {
@@ -99,13 +102,14 @@ func PostNodeHandler(ctx *gin.Context) {
 		Type: reqBody.Type,
 		Data: reqBody.Data,
 	}
+	node.CreateBy = ctx.GetString("userID")
 	err = app.CreateNode(&node)
 	if err != nil {
 		abortWithHttpError(ctx, err)
 		return
 	}
 	ctx.AbortWithStatusJSON(
-		http.StatusOK,
+		http.StatusCreated,
 		gin.H{
 			"id":       node.ID,
 			"data":     node.Data,

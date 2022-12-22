@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/TendonT52/e-learning-tendon/config"
@@ -16,7 +17,7 @@ import (
 	jsonpath "github.com/steinfletcher/apitest-jsonpath"
 )
 
-var _ = Describe("test course route", Ordered, func() {
+var _ = Describe("test lesson route", Ordered, func() {
 	var t GinkgoTInterface
 
 	var userAdmin = core.User{
@@ -90,59 +91,57 @@ var _ = Describe("test course route", Ordered, func() {
 			}
 		})
 
-		courseID := ""
-		It("post user", func() {
+		nodeID := ""
+		It("post lesson", func() {
 			req := apitest.New().
 				Handler(handlers.Router).
-				Post("/api/v1/auth/courses").
+				Post("/api/v1/auth/nodes").
 				Header("Authorization", "Bearer "+token.Access).
 				JSON(`
 				{
-					"name": "course name",
-					"description": "course description",
-					"access":"public",
-					"lessons": []
+					"data": "data",
+					"type": "video"
 				}`).
 				Expect(t).
 				Status(http.StatusCreated).
 				Assert(
 					jsonpath.Chain().
 						Present("id").
-						Equal("name", "course name").
-						Equal("description", "course description").
+						Equal("data", "data").
+						Equal("type", "video").
 						End(),
 				).
 				End().Response
 			body := getJSON(req)
-			courseID = body["id"].(string)
+			nodeID = body["id"].(string)
 		})
 
-		It("get course", func() {
+		It("get nodes", func() {
 			apitest.New().
 				Handler(handlers.Router).
-				Get("/api/v1/auth/courses/"+courseID).
+				Get("/api/v1/auth/nodes/"+nodeID).
 				Header("Authorization", "Bearer "+token.Access).
 				Expect(t).
 				Status(http.StatusOK).
 				Assert(
 					jsonpath.Chain().
 						Present("id").
-						Equal("name", "course name").
-						Equal("description", "course description").
+						Equal("data", "data").
+						Equal("type", "video").
 						End(),
 				).
 				End()
 		})
 
-		It("update course", func() {
-			apitest.New().
+		It("update nodes", func() {
+			req := apitest.New().
 				Handler(handlers.Router).
-				Patch("/api/v1/auth/courses/"+courseID).
+				Patch("/api/v1/auth/nodes/"+nodeID).
 				Header("Authorization", "Bearer "+token.Access).
 				JSON(`
 				{
-					"name": "course name update",
-					"description": "course description update"
+					"data": "data update",
+					"type": "image"
 				}
 				`).
 				Expect(t).
@@ -150,17 +149,18 @@ var _ = Describe("test course route", Ordered, func() {
 				Assert(
 					jsonpath.Chain().
 						Present("id").
-						Equal("name", "course name update").
-						Equal("description", "course description update").
+						Equal("data", "data update").
+						Equal("type", "image").
 						End(),
 				).
-				End()
+				End().Response
+				fmt.Println(req.StatusCode)
 		})
 
-		It("delete course", func() {
+		It("delete lessons", func() {
 			apitest.New().
 				Handler(handlers.Router).
-				Delete("/api/v1/auth/courses/"+courseID).
+				Delete("/api/v1/auth/nodes/"+nodeID).
 				Header("Authorization", "Bearer "+token.Access).
 				Expect(t).
 				Status(http.StatusOK).

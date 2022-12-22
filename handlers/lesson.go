@@ -31,6 +31,7 @@ func GetLessonHandler(ctx *gin.Context) {
 		},
 	)
 }
+
 func PatchLessonHandler(ctx *gin.Context) {
 	lessonID := ctx.Param("id")
 	lesson, err := app.GetLesson(lessonID)
@@ -116,7 +117,6 @@ func PostLessonHandler(ctx *gin.Context) {
 		Name        string   `json:"name" binding:"required,min=1,max=40"`
 		Description string   `json:"description" binding:"required"`
 		Access      string   `json:"access" binding:"required"`
-		CreateBy    string   `json:"createBy" binding:"required"`
 		Nodes       []string `json:"nodes" binding:"required"`
 		NextLessons []string `json:"nextLesson" binding:"required"`
 		PrevLessons []string `json:"prevLesson" binding:"required"`
@@ -149,7 +149,7 @@ func PostLessonHandler(ctx *gin.Context) {
 		return
 	}
 	ctx.AbortWithStatusJSON(
-		http.StatusOK,
+		http.StatusCreated,
 		gin.H{
 			"id":          lesson.ID,
 			"name":        lesson.Name,

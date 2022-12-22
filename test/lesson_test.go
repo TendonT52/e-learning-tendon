@@ -16,7 +16,7 @@ import (
 	jsonpath "github.com/steinfletcher/apitest-jsonpath"
 )
 
-var _ = Describe("test course route", Ordered, func() {
+var _ = Describe("test lesson route", Ordered, func() {
 	var t GinkgoTInterface
 
 	var userAdmin = core.User{
@@ -90,18 +90,21 @@ var _ = Describe("test course route", Ordered, func() {
 			}
 		})
 
-		courseID := ""
-		It("post user", func() {
+		lessonID := ""
+		It("post lesson", func() {
 			req := apitest.New().
 				Handler(handlers.Router).
-				Post("/api/v1/auth/courses").
+				Post("/api/v1/auth/lessons").
 				Header("Authorization", "Bearer "+token.Access).
 				JSON(`
 				{
 					"name": "course name",
 					"description": "course description",
 					"access":"public",
-					"lessons": []
+					"lessons": [],
+					"nodes": [],
+					"nextLesson": [],
+					"prevLesson": []
 				}`).
 				Expect(t).
 				Status(http.StatusCreated).
@@ -114,13 +117,13 @@ var _ = Describe("test course route", Ordered, func() {
 				).
 				End().Response
 			body := getJSON(req)
-			courseID = body["id"].(string)
+			lessonID = body["id"].(string)
 		})
 
-		It("get course", func() {
+		It("get lessons", func() {
 			apitest.New().
 				Handler(handlers.Router).
-				Get("/api/v1/auth/courses/"+courseID).
+				Get("/api/v1/auth/lessons/"+lessonID).
 				Header("Authorization", "Bearer "+token.Access).
 				Expect(t).
 				Status(http.StatusOK).
@@ -134,10 +137,10 @@ var _ = Describe("test course route", Ordered, func() {
 				End()
 		})
 
-		It("update course", func() {
+		It("update lessons", func() {
 			apitest.New().
 				Handler(handlers.Router).
-				Patch("/api/v1/auth/courses/"+courseID).
+				Patch("/api/v1/auth/lessons/"+lessonID).
 				Header("Authorization", "Bearer "+token.Access).
 				JSON(`
 				{
@@ -157,10 +160,10 @@ var _ = Describe("test course route", Ordered, func() {
 				End()
 		})
 
-		It("delete course", func() {
+		It("delete lessons", func() {
 			apitest.New().
 				Handler(handlers.Router).
-				Delete("/api/v1/auth/courses/"+courseID).
+				Delete("/api/v1/auth/lessons/"+lessonID).
 				Header("Authorization", "Bearer "+token.Access).
 				Expect(t).
 				Status(http.StatusOK).
