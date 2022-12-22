@@ -89,32 +89,60 @@ var _ = Describe("test user route", Ordered, func() {
 				Refresh: cookies["refresh_token"],
 			}
 		})
-		It("get user", func() {
+
+		courseID := ""
+		It("post user", func() {
+			req := apitest.New().
+				Handler(handlers.Router).
+				Post("/api/v1/auth/courses").
+				Header("Authorization", "Bearer "+token.Access).
+				JSON(`
+				{
+					"name": "course name",
+					"description": "course description",
+					"access":"public",
+					"lessons": []
+				}`).
+				Expect(t).
+				Status(http.StatusCreated).
+				Assert(
+					jsonpath.Chain().
+						Present("id").
+						Equal("name", "course name").
+						Equal("description", "course description").
+						End(),
+				).
+				End().Response
+			body := getJSON(req)
+			courseID = body["id"].(string)
+		})
+
+		It("get course", func() {
 			apitest.New().
 				Handler(handlers.Router).
-				Get("/api/v1/auth/users/"+userStudent.ID).
+				Get("/api/v1/auth/courses/"+courseID).
 				Header("Authorization", "Bearer "+token.Access).
 				Expect(t).
 				Status(http.StatusOK).
 				Assert(
 					jsonpath.Chain().
 						Present("id").
-						Equal("firstName", "student").
-						Equal("lastName", "student").
+						Equal("name", "course name").
+						Equal("description", "course description").
 						End(),
 				).
 				End()
 		})
 
-		It("update user", func() {
+		It("update course", func() {
 			apitest.New().
 				Handler(handlers.Router).
-				Patch("/api/v1/auth/users/"+userStudent.ID).
+				Patch("/api/v1/auth/courses/"+courseID).
 				Header("Authorization", "Bearer "+token.Access).
 				JSON(`
 				{
-					"firstName": "student2",
-					"lastName": "student2"
+					"name": "course name update",
+					"description": "course description update"
 				}
 				`).
 				Expect(t).
@@ -122,17 +150,17 @@ var _ = Describe("test user route", Ordered, func() {
 				Assert(
 					jsonpath.Chain().
 						Present("id").
-						Equal("firstName", "student2").
-						Equal("lastName", "student2").
+						Equal("name", "course name update").
+						Equal("description", "course description update").
 						End(),
 				).
 				End()
 		})
 
-		It("delete user", func() {
+		It("delete course", func() {
 			apitest.New().
 				Handler(handlers.Router).
-				Delete("/api/v1/auth/users/"+userStudent.ID).
+				Delete("/api/v1/auth/courses/"+courseID).
 				Header("Authorization", "Bearer "+token.Access).
 				Expect(t).
 				Status(http.StatusOK).

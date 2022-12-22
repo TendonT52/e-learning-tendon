@@ -149,10 +149,10 @@ func (u *userDB) UpdateUser(user *core.User) error {
 		"firstName":      user.FirstName,
 		"lastName":       user.LastName,
 		"email":          user.Email,
-		"hashedPassword": user.HashedPassword,
+		"hashed_password": user.HashedPassword,
 		"role":           user.Role,
 		"curricula":      HexIDToObjID(user.Courses),
-		"updatedAt":      primitive.NewDateTimeFromTime(user.UpdatedAt),
+		"updated_at":      primitive.NewDateTimeFromTime(user.UpdatedAt),
 	}}
 	result, err := u.collection.UpdateByID(context.Background(), userObjID, update)
 	if err != nil {

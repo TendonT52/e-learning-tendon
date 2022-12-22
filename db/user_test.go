@@ -84,7 +84,7 @@ var _ = Describe("test user db", Ordered, func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(users).To(ConsistOf(
 					MatchFields(IgnoreExtras, Fields{
-						"ID":             Not(BeNil()),
+						"ID":             Not(BeZero()),
 						"FirstName":      Equal("testFirstName1"),
 						"LastName":       Equal("testLastName1"),
 						"Email":          Equal("testEmail1"),
@@ -94,7 +94,7 @@ var _ = Describe("test user db", Ordered, func() {
 						"UpdatedAt":      Not(BeNil()),
 					}),
 					MatchFields(IgnoreExtras, Fields{
-						"ID":             Not(BeNil()),
+						"ID":             Not(BeZero()),
 						"FirstName":      Equal("testFirstName2"),
 						"LastName":       Equal("testLastName2"),
 						"Email":          Equal("testEmail2"),
@@ -104,7 +104,7 @@ var _ = Describe("test user db", Ordered, func() {
 						"UpdatedAt":      Not(BeNil()),
 					}),
 					MatchFields(IgnoreExtras, Fields{
-						"ID":             Not(BeNil()),
+						"ID":             Not(BeZero()),
 						"FirstName":      Equal("testFirstName3"),
 						"LastName":       Equal("testLastName3"),
 						"Email":          Equal("testEmail3"),
