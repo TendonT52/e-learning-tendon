@@ -3,7 +3,7 @@ info:
     title: Tendon API
     version: "1.0"
 servers:
-    - url: http://tendont52@tendon.tplinkdns.com
+    - url: http://146.190.122.208:8080/api/v1
 
 components:
     securitySchemes:
@@ -335,35 +335,32 @@ paths:
                                     message:
                                         type: string
                                         example: wrong email or password
-    /api/user/sign-up:
+    /user/sign-up:
         post:
             requestBody:
                 content:
                     application/json:
                         schema:
                             type: object
+                            required:
+                                - firstName
+                                - lastName
+                                - email
+                                - password
                             properties:
-                                attributes:
-                                    required:
-                                        - firstName
-                                        - lastName
-                                        - email
-                                        - password
-                                    type: object
-                                    properties:
-                                        firstName:
-                                            type: string
-                                            example: "NewName"
-                                        lastName:
-                                            type: string
-                                            example: "NewLastName"
-                                        email:
-                                            type: string
-                                            example: "NewEmail"
-                                        password:
-                                            type: string
-                                            format: password
-                                            example: "NewPassword"
+                                firstName:
+                                    type: string
+                                    example: "NewName"
+                                lastName:
+                                    type: string
+                                    example: "NewLastName"
+                                email:
+                                    type: string
+                                    example: "NewEmail"
+                                password:
+                                    type: string
+                                    format: password
+                                    example: "NewPassword"
             responses:
                 "200":
                     $ref: "#/components/responses/successAuth"
@@ -375,7 +372,7 @@ paths:
                     $ref: "#/components/responses/inputError"
 
 
-    /api/user/sign-in:
+    /user/sign-in:
         post:
             security:
                 - bearerAuth: []
@@ -720,152 +717,152 @@ paths:
                     description: Everything went fine
 
 
-    /resources/video/{id}:
-        get:
-            parameters:
-                    - name: id
-                      in: path
-                      required: true
-                      schema:
-                          type: string
-            responses:
-                "200":
-                    description: Everything went fine
-    /resources/video:
-        post:
-            requestBody:
-                content:
-                    multipart/form-data:
-                        schema:
-                            type: object
-                            properties:
-                                nodeId:
-                                    type: string
-                                userId:
-                                    type: string
-                                fileName:
-                                    type: string
-                                    format: binary
-            responses:
-                "200":
-                    description: Everything went fine
+    # /resources/video/{id}:
+    #     get:
+    #         parameters:
+    #                 - name: id
+    #                   in: path
+    #                   required: true
+    #                   schema:
+    #                       type: string
+    #         responses:
+    #             "200":
+    #                 description: Everything went fine
+    # /resources/video:
+    #     post:
+    #         requestBody:
+    #             content:
+    #                 multipart/form-data:
+    #                     schema:
+    #                         type: object
+    #                         properties:
+    #                             nodeId:
+    #                                 type: string
+    #                             userId:
+    #                                 type: string
+    #                             fileName:
+    #                                 type: string
+    #                                 format: binary
+    #         responses:
+    #             "200":
+    #                 description: Everything went fine
 
-    /resources/pdf/{id}:
-        get:
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-            responses:
-                "200":
-                    description: Everything went fine
-    /resources/pdf:
-        post:
-            requestBody:
-                content:
-                    multipart/form-data:
-                        schema:
-                            type: object
-                            properties:
-                                nodeId:
-                                    type: string
-                                userId:
-                                    type: string
-                                fileName:
-                                    type: string
-                                    format: binary
-            responses:
-                "200":
-                    description: Everything went fine
+    # /resources/pdf/{id}:
+    #     get:
+    #         parameters:
+    #             - name: id
+    #               in: path
+    #               required: true
+    #               schema:
+    #                   type: string
+    #         responses:
+    #             "200":
+    #                 description: Everything went fine
+    # /resources/pdf:
+    #     post:
+    #         requestBody:
+    #             content:
+    #                 multipart/form-data:
+    #                     schema:
+    #                         type: object
+    #                         properties:
+    #                             nodeId:
+    #                                 type: string
+    #                             userId:
+    #                                 type: string
+    #                             fileName:
+    #                                 type: string
+    #                                 format: binary
+    #         responses:
+    #             "200":
+    #                 description: Everything went fine
 
-    /resources/text/{id}:
-        get:
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-            responses:
-                "200":
-                    description: Everything went fine
-    /resources/text:
-        post:
-            requestBody:
-                content:
-                    multipart/form-data:
-                        schema:
-                            type: object
-                            properties:
-                                nodeId:
-                                    type: string
-                                userId:
-                                    type: string
-                                fileName:
-                                    type: string
-                                    format: binary
-            responses:
-                "200":
-                    description: Everything went fine
+    # /resources/text/{id}:
+    #     get:
+    #         parameters:
+    #             - name: id
+    #               in: path
+    #               required: true
+    #               schema:
+    #                   type: string
+    #         responses:
+    #             "200":
+    #                 description: Everything went fine
+    # /resources/text:
+    #     post:
+    #         requestBody:
+    #             content:
+    #                 multipart/form-data:
+    #                     schema:
+    #                         type: object
+    #                         properties:
+    #                             nodeId:
+    #                                 type: string
+    #                             userId:
+    #                                 type: string
+    #                             fileName:
+    #                                 type: string
+    #                                 format: binary
+    #         responses:
+    #             "200":
+    #                 description: Everything went fine
 
-    /resources/image/{id}:
-        get:
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                      type: string
-            responses:
-                "200":
-                    description: Everything went fine
+    # /resources/image/{id}:
+    #     get:
+    #         parameters:
+    #             - name: id
+    #               in: path
+    #               required: true
+    #               schema:
+    #                   type: string
+    #         responses:
+    #             "200":
+    #                 description: Everything went fine
 
-    /resources/image:
-        post:
-            requestBody:
-                content:
-                    multipart/form-data:
-                        schema:
-                            type: object
-                            properties:
-                                nodeId:
-                                    type: string
-                                userId:
-                                    type: string
-                                fileName:
-                                    type: string
-                                    format: binary
-            responses:
-                "200":
-                    description: Everything went fine
-    /resources/sound/{id}:
-        get:
-            parameters:
-                    - name: id
-                      in: path
-                      required: true
-                      schema:
-                          type: string
-            responses:
-                "200":
-                    description: Everything went fine
-    /resources/sound:
-        post:
-            requestBody:
-                content:
-                    multipart/form-data:
-                        schema:
-                            type: object
-                            properties:
-                                nodeId:
-                                    type: string
-                                userId:
-                                    type: string
-                                fileName:
-                                    type: string
-                                    format: binary
-            responses:
-                "200":
-                    description: Everything went fine
+    # /resources/image:
+    #     post:
+    #         requestBody:
+    #             content:
+    #                 multipart/form-data:
+    #                     schema:
+    #                         type: object
+    #                         properties:
+    #                             nodeId:
+    #                                 type: string
+    #                             userId:
+    #                                 type: string
+    #                             fileName:
+    #                                 type: string
+    #                                 format: binary
+    #         responses:
+    #             "200":
+    #                 description: Everything went fine
+    # /resources/sound/{id}:
+    #     get:
+    #         parameters:
+    #                 - name: id
+    #                   in: path
+    #                   required: true
+    #                   schema:
+    #                       type: string
+    #         responses:
+    #             "200":
+    #                 description: Everything went fine
+    # /resources/sound:
+    #     post:
+    #         requestBody:
+    #             content:
+    #                 multipart/form-data:
+    #                     schema:
+    #                         type: object
+    #                         properties:
+    #                             nodeId:
+    #                                 type: string
+    #                             userId:
+    #                                 type: string
+    #                             fileName:
+    #                                 type: string
+    #                                 format: binary
+    #         responses:
+    #             "200":
+    #                 description: Everything went fine

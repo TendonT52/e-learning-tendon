@@ -1,11 +1,15 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+)
 
 var Router *gin.Engine
 
 func SetupRouter() {
 	Router = gin.New()
+	Router.Use(cors.Default())
 	Router.Use(gin.Logger())
 	v1 := Router.Group("/api/v1")
 	{
