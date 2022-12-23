@@ -168,7 +168,7 @@ components:
                                 massage: password must a combination of uppercase letters, lowercase letters, numbers, and symbols.
 
 paths:
-    /users/{id}:
+    /auth/users/{id}:
         get:
             description: get user information at specific id (Only admin user)
             parameters:
