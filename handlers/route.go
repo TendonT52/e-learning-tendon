@@ -1,10 +1,22 @@
 package handlers
 
 import (
+	"github.com/TendonT52/e-learning-tendon/internal/app"
+	"github.com/TendonT52/e-learning-tendon/internal/core"
 	"github.com/gin-gonic/gin"
 )
 
 var Router *gin.Engine
+
+func InitAdminUser() {
+	app.SignUp(&core.User{
+		FirstName: "admin",
+		LastName:  "admin",
+		Email:     "admin@email.com",
+		Role:      core.Admin,
+		Courses:   []string{},
+	}, "admin")
+}
 
 func SetupRouter() {
 	Router = gin.New()

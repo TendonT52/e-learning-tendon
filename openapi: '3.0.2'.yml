@@ -22,151 +22,96 @@ components:
                 id:
                     type: string
                     example: "6303306a448342f4bb47fb2e"
-                attributes:
-                    type: object
-                    properties:
-                        firstName:
-                            type: string
-                            example: "John"
-                        lastName:
-                            type: string
-                            example: "dodo"
-                        email:
-                            type: string
-                            example: "John@email.com"
-                        role:
-                            type: string
-                            example: "student"
-                            enum:
-                                - student
-                                - teacher
-                                - admin
-                        createAt:
-                            type: integer
-                            example: 1663598072
-                        updateAt:
-                            type: integer
-                            example: 1663599923
-        briefCurriculum:
+                firstName:
+                    type: string
+                    example: "John"
+                lastName:
+                    type: string
+                    example: "dodo"
+                email:
+                    type: string
+                    example: "John@email.com"
+                role:
+                    type: string
+                    example: "student"
+                    enum:
+                        - student
+                        - teacher
+                        - admin
+                createAt:
+                    type: string
+                    example: 2022-12-23T14:45:31.495Z
+                updateAt:
+                    type: string
+                    example: 2022-12-23T14:45:31.495Z
+
+        course:
             type: object
             properties:
-                type:
-                    type: string
-                    example: "briefCurriculum"
                 id:
                     type: string
                     example: "63173c3f997fd51cea50fb32"
-                attributes:
-                    type: object
-                    properties:
-                        curriculumName:
-                            type: string
-                            example: "Gen physics"
-                        curriculumDescription:
-                            type: string
-                            example: "University physics for year 1"
-                        accessLevel:
-                            type: string
-                            enum:
-                                - public
-                                - inviteOnly
-                                - private
-                        proGress:
-                            type: number
-                            minimum: 0
-                            maximum: 100
-                            example: 79
-        curriculum:
+                name:
+                    type: string
+                    example: "Gen physics"
+                description:
+                    type: string
+                    example: "University physics for year 1"
+                access:
+                    type: string
+                    enum:
+                        - public
+                        - inviteOnly
+                        - private
+                createBy:
+                    type: string
+                    example: "6303306a448342f4bb47fb2e"
+                updateAt:
+                    type: string
+                lesssons:
+                    type: array
+                    items:
+                        type: string
+                    example:
+                        ["6303306a448342f4bb47fb2e", "6303306a448342f4bb47fb20"]
+        lesson:
             type: object
             properties:
-                type:
-                    type: string
-                    example: "curriculum"
                 id:
                     type: string
-                    example: "63173c3f997fd51cea50fb32"
-                attributes:
-                    type: object
-                    properties:
-                        curriculumName:
-                            type: string
-                            example: "Gen physics"
-                        curriculumDescription:
-                            type: string
-                            example: "University physics for year 1"
-                        accessLevel:
-                            type: string
-                            enum:
-                                - public
-                                - inviteOnly
-                                - private
-                        subLearningNode:
-                            type: array
-                            items:
-                                $ref: "#/components/schemas/briefLearningNode"
-                relationships:
-                    type: object
-                    properties:
-                        progress:
-                            type: number
-                            minimum: 0
-                            maximum: 100
-                            example: 79
+                name:
+                    type: string
+                description:
+                    type: string
+                access:
+                    type: string
+                    enum:
+                        - public
+                        - inviteOnly
+                        - private
+                createBy:
+                    type: string
+                updateAt:
+                    type: string
+                    example: 2022-12-23T14:45:31.495Z
+                nextLesson:
+                    type: array
+                    items:
+                        type: string
+                    example:
+                        ["6303306a448342f4bb47fb2e", "6303306a448342f4bb47fb20"]
+                prevLesson:
+                    type: array
+                    items:
+                        type: string
+                    example:
+                        ["6303306a448342f4bb47fb2e", "6303306a448342f4bb47fb20"]
 
-        briefLearningNode:
-            type: object
-            properties:
-                type:
-                    type: string
-                    example: "briefLearningNode"
-                id:
-                    type: string
-                attributes:
-                    type: object
-                    properties:
-                        curriculums:
-                            type: array
-                            items:
-                                $ref: "#/components/schemas/briefCurriculum"
-                        learningNodeName:
-                            type: string
-                        learningNodeDescription:
-                            type: string
-
-        learningNode:
-            type: object
-            properties:
-                type:
-                    type: string
-                    example: "briefLearningNode"
-                id:
-                    type: string
-                attributes:
-                    type: object
-                    properties:
-                        learningNodeName:
-                            type: string
-                        learningNodeDescription:
-                            type: string
-                        curriculums:
-                            type: array
-                            items:
-                                $ref: "#/components/schemas/briefCurriculum"
-                        subNode:
-                            type: array
-                            items:
-                                $ref: "#/components/schemas/node"
-                        nextLearningNodeId:
-                            type: array
-                            items:
-                                $ref: "#/components/schemas/briefLearningNode"
-                        previousLearningNodeId:
-                            type: array
-                            items:
-                                $ref: "#/components/schemas/briefLearningNode"
         node:
             type: object
             properties:
+                id:
+                    type: string
                 type:
                     type: string
                     enum:
@@ -175,39 +120,18 @@ components:
                         - textNode
                         - soundNode
                         - imageNode
-                id:
+                data:
                     type: string
-                attributes:
-                    type: object
-                    properties:
-                        priority:
-                            type: string
-                            enum:
-                                - require
-                                - extension
-                                - optional
-                        size:
-                            type: number
-                        resources:
-                            type: string
-                            example: /resources/pdf/1234
-
+                createBy:
+                    type: string
+                    example: "63173c3f997fd51cea50fb32"
+                updateAt:
+                    type: string
+                    example: 2022-12-23T14:45:31.495Z
 
     responses:
-        successAuth:
-            description: edit user information success
-            content:
-                application/json:
-                    schema:
-                        type: object
-                        properties:
-                            message:
-                                type: string
-                                example: Success
-                            token:
-                                type: string
         unauthorizedError:
-            description: Access token is missing or invalid
+            description: access token is missing or invalid
             content:
                 application/json:
                     schema:
@@ -215,9 +139,9 @@ components:
                         properties:
                             massage:
                                 type: string
-                                example: Unauthorized
+                                example: unauthorized
         notFoundError:
-            description: Not found
+            description: not found
             content:
                 application/json:
                     schema:
@@ -225,9 +149,9 @@ components:
                         properties:
                             massage:
                                 type: string
-                                example: Not found
+                                example: not found
         inputError:
-            description: Input in wrong format or conflict
+            description: input in wrong format or conflict
             content:
                 application/json:
                     schema:
@@ -235,7 +159,7 @@ components:
                     examples:
                         emailAlreadyUse:
                             value:
-                                massage: This email is already use
+                                massage: this email is already use
                         passwordToShort:
                             value:
                                 massage: password must at least 12 characters long
@@ -244,9 +168,9 @@ components:
                                 massage: password must a combination of uppercase letters, lowercase letters, numbers, and symbols.
 
 paths:
-    /api/users/{id}:
+    /users/{id}:
         get:
-            description: get user information at specific id
+            description: get user information at specific id (Only admin user)
             parameters:
                 - name: id
                   in: path
@@ -263,15 +187,16 @@ paths:
                             schema:
                                 type: object
                                 properties:
-                                    data:
-                                        $ref: "#/components/schemas/user"
-                                    relationships:
-                                        type: object
-                                        properties:
-                                            curriculums:
-                                                type: array
-                                                items:
-                                                    $ref: "#/components/schemas/briefCurriculum"
+                                    id:
+                                        type: string
+                                    firstName:
+                                        type: string
+                                    lastName:
+                                        type: string
+                                    email:
+                                        type: string
+                                    updateAt:
+                                        type: string
                 "401":
                     $ref: "#/components/responses/unauthorizedError"
                 "404":
@@ -306,13 +231,29 @@ paths:
                                     example: "43aad@#134"
             responses:
                 "200":
-                    $ref: "#/components/responses/successAuth"
+                    description: success
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    id:
+                                        type: string
+                                    firstName:
+                                        type: string
+                                    lastName:
+                                        type: string
+                                    email:
+                                        type: string
+                                    updateAt:
+                                        type: string
+                "400":
+                    $ref: "#/components/responses/inputError"
                 "401":
                     $ref: "#/components/responses/unauthorizedError"
                 "404":
                     $ref: "#/components/responses/notFoundError"
-                "406":
-                    $ref: "#/components/responses/inputError"
+
         delete:
             parameters:
                 - name: id
@@ -324,7 +265,13 @@ paths:
                 - bearerAuth: []
             responses:
                 "200":
-                    $ref: "#/components/responses/successAuth"
+                    description: success
+                "400":
+                    $ref: "#/components/responses/inputError"
+                "401":
+                    $ref: "#/components/responses/unauthorizedError"
+                "404":
+                    $ref: "#/components/responses/notFoundError"
                 "406":
                     description: wrong email or password
                     content:
@@ -335,6 +282,7 @@ paths:
                                     message:
                                         type: string
                                         example: wrong email or password
+
     /user/sign-up:
         post:
             requestBody:
@@ -356,26 +304,37 @@ paths:
                                     example: "NewLastName"
                                 email:
                                     type: string
-                                    example: "NewEmail"
+                                    example: "test@email.com"
                                 password:
                                     type: string
                                     format: password
                                     example: "NewPassword"
             responses:
-                "200":
-                    $ref: "#/components/responses/successAuth"
-                "401":
-                    $ref: "#/components/responses/unauthorizedError"
-                "404":
-                    $ref: "#/components/responses/notFoundError"
-                "406":
+                "201":
+                    description: success
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    id:
+                                        type: string
+                                    lastName:
+                                        type: string
+                                    email:
+                                        type: string
+                                        format: email
+                                    password:
+                                        type: string
+                                    accessToken:
+                                        type: string
+                "400":
                     $ref: "#/components/responses/inputError"
-
 
     /user/sign-in:
         post:
-            security:
-                - bearerAuth: []
+            # security:
+            #     - bearerAuth: []
             requestBody:
                 content:
                     application/json:
@@ -384,14 +343,33 @@ paths:
                             properties:
                                 email:
                                     type: string
-                                    example: tendon@gmail.com
+                                    example: test@email.com
                                 password:
                                     type: string
                                     format: password
+                                    example: NewPassword
             responses:
                 "200":
-                    $ref: "#/components/responses/successAuth"
-                "406":
+                    description: success
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    id:
+                                        type: string
+                                    lastName:
+                                        type: string
+                                    email:
+                                        type: string
+                                        format: email
+                                    password:
+                                        type: string
+                                    accessToken:
+                                        type: string
+                "400":
+                    $ref: "#/components/responses/inputError"
+                "401":
                     description: wrong email or password
                     content:
                         application/json:
@@ -402,7 +380,7 @@ paths:
                                         type: string
                                         example: wrong email or password
 
-    /api/user/sign-out:
+    /user/sign-out:
         post:
             security:
                 - bearerAuth: []
@@ -412,9 +390,9 @@ paths:
                         schema:
                             type: object
                             properties:
-                                email:
+                                accessToken:
                                     type: string
-                                    example: tendon@gmail.com
+                                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZW5kb25CYWNrZW5kIiwic3ViIjoiNjNhNWJmMGJlNWRjNDUwNzdlMDg5NTFjIiwiZXhwIjoxNjcxODA3MDMxLCJuYmYiOjE2NzE4MDY3MzEsImlhdCI6MTY3MTgwNjczMSwianRpIjoiNjNhNWJmMGJlNWRjNDUwNzdlMDg5NTFkIn0.HD2Syb69kBLwk7xcWj5HKA1en931r4X3RoFgfzwRlTM
             responses:
                 "200":
                     description: logout success
@@ -426,31 +404,13 @@ paths:
                                     message:
                                         type: string
                                         example: Success
-                "401":
-                    $ref: "#/components/responses/unauthorizedError"
-                "406":
-                    description: email not match
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    message:
-                                        type: string
-                                        example: Email not match
+                "400":
+                    $ref: "#/components/responses/inputError"
 
-    /api/token/refresh:
+    /token/refresh:
         post:
             security:
                 - bearerAuth: []
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            properties:
-                                refreshToken:
-                                    type: string
             responses:
                 "200":
                     description: Everything went fine
@@ -459,17 +419,14 @@ paths:
                             schema:
                                 type: object
                                 properties:
-                                    message:
+                                    accessToken:
                                         type: string
-                                        example: Success
-                                    token:
-                                        type: string
-                                    refreshToken:
-                                        type: string
+                "400":
+                    $ref: "#/components/responses/inputError"
                 "401":
                     $ref: "#/components/responses/unauthorizedError"
 
-    /api/curricula/{id}:
+    /courses/{id}:
         get:
             parameters:
                 - name: id
@@ -483,7 +440,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/curriculum"
+                                $ref: "#/components/schemas/course"
                 "401":
                     $ref: "#/components/responses/unauthorizedError"
                 "404":
@@ -501,24 +458,24 @@ paths:
                         schema:
                             type: object
                             properties:
-                                curriculumName:
+                                name:
                                     type: string
                                     example: "Gen physics"
-                                curriculumDescription:
+                                description:
                                     type: string
                                     example: "University physics for year 1"
-                                accessLevel:
+                                access:
                                     type: string
                                     enum:
                                         - public
                                         - inviteOnly
                                         - private
-                                addSubLearningNode:
+                                createBy:
                                     type: array
                                     items:
                                         type: string
                                         example: learningNodeID
-                                deleteLearningNode:
+                                lessons:
                                     type: array
                                     items:
                                         type: string
@@ -526,6 +483,12 @@ paths:
             responses:
                 "200":
                     description: success
+                "400":
+                    $ref: "#/components/responses/inputError"
+                "401":
+                    $ref: "#/components/responses/unauthorizedError"
+                "404":
+                    $ref: "#/components/responses/notFoundError"
         delete:
             parameters:
                 - name: id
@@ -536,8 +499,12 @@ paths:
             responses:
                 "200":
                     description: success
+                "401":
+                    $ref: "#/components/responses/unauthorizedError"
+                "404":
+                    $ref: "#/components/responses/notFoundError"
 
-    /api/curricula:
+    /courses:
         post:
             requestBody:
                 content:
@@ -545,28 +512,27 @@ paths:
                         schema:
                             type: object
                             properties:
-                                curriculumName:
+                                name:
                                     type: string
                                     example: "Gen physics"
-                                curriculumDescription:
+                                description:
                                     type: string
                                     example: "University physics for year 1"
-                                accessLevel:
+                                access:
                                     type: string
                                     enum:
                                         - public
                                         - inviteOnly
                                         - private
-                                subLearningNode:
+                                lessons:
                                     type: array
                                     items:
                                         type: string
-                                        example: learningNodeId
             responses:
                 "200":
                     description: Everything went fine
 
-    /api/learning-nodes/{id}:
+    /lessons/{id}:
         get:
             parameters:
                 - name: id
@@ -580,7 +546,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/learningNode"
+                                $ref: "#/components/schemas/lesson"
         patch:
             parameters:
                 - name: id
@@ -715,7 +681,6 @@ paths:
             responses:
                 "200":
                     description: Everything went fine
-
 
     # /resources/video/{id}:
     #     get:

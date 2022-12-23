@@ -83,4 +83,6 @@ func SetupInstance() {
 			RefreshTokenDuration:  viper.GetDuration("token.refresh.expire"),
 		},
 	)
+
+	
 }
