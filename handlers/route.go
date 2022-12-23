@@ -9,10 +9,9 @@ var Router *gin.Engine
 
 func SetupRouter() {
 	Router = gin.New()
-	Router.Use(cors.Default())
-	Router.Use(gin.Recovery())
-	Router.Use(Options)
 	Router.Use(gin.Logger())
+	Router.Use(gin.Recovery())
+	Router.Use(cors.Default())
 	v1 := Router.Group("/api/v1")
 	{
 		v1.POST("/user/sign-up", SignUpHandler)
