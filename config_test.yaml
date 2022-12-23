@@ -1,7 +1,7 @@
 app:
     url: 127.0.0.1
     name: tendonAPI
-    port: 8080
+    port: :8080
 
 mongo:
     name: tendon

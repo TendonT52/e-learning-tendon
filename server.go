@@ -9,4 +9,5 @@ func main() {
 	config.LoadConfig()
 	config.SetupInstance()
 	handlers.SetupRouter()
+	handlers.StartServer()
 }

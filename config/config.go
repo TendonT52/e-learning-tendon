@@ -7,6 +7,7 @@ import (
 	"github.com/TendonT52/e-learning-tendon/db"
 	"github.com/TendonT52/e-learning-tendon/handlers"
 	"github.com/TendonT52/e-learning-tendon/internal/app"
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
 
@@ -21,7 +22,9 @@ func LoadConfig() {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 	log.Println("Load config success")
+	gin.SetMode(gin.ReleaseMode)
 }
+
 func LoadConfigTest() {
 	log.Println("Loading config...")
 	viper.SetConfigName("config_test")
