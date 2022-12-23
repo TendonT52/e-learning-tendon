@@ -11,7 +11,7 @@ func main() {
 	fmt.Println("server is running")
 	config.LoadConfig()
 	config.SetupInstance()
-	handlers.InitAdminUser()
+	handlers.InitUser()
 	handlers.SetupRouter()
 	handlers.StartServer()
 }

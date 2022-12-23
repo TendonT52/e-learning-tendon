@@ -8,7 +8,7 @@ import (
 
 var Router *gin.Engine
 
-func InitAdminUser() {
+func InitUser() {
 	app.SignUp(&core.User{
 		FirstName: "admin",
 		LastName:  "admin",
@@ -16,6 +16,20 @@ func InitAdminUser() {
 		Role:      core.Admin,
 		Courses:   []string{},
 	}, "admin")
+	app.SignUp(&core.User{
+		FirstName: "teacher",
+		LastName:  "teacher",
+		Email:     "teacher@email.com",
+		Role:      core.Teacher,
+		Courses:   []string{},
+	}, "teacher")
+	app.SignUp(&core.User{
+		FirstName: "student",
+		LastName:  "student",
+		Email:     "student@email.com",
+		Role:      core.Student,
+		Courses:   []string{},
+	}, "student")
 }
 
 func SetupRouter() {
