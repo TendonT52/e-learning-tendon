@@ -10,6 +10,8 @@ var Router *gin.Engine
 func SetupRouter() {
 	Router = gin.New()
 	Router.Use(cors.Default())
+	Router.Use(gin.Recovery())
+	Router.Use(Options)
 	Router.Use(gin.Logger())
 	v1 := Router.Group("/api/v1")
 	{
