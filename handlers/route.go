@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,7 +10,7 @@ func SetupRouter() {
 	Router = gin.New()
 	Router.Use(gin.Logger())
 	Router.Use(gin.Recovery())
-	Router.Use(cors.Default())
+	Router.Use(CORSMiddleware())
 	v1 := Router.Group("/api/v1")
 	{
 		v1.POST("/user/sign-up", SignUpHandler)
