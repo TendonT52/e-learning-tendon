@@ -15,21 +15,21 @@ func InitUser() {
 		Email:     "admin@email.com",
 		Role:      core.Admin,
 		Courses:   []string{},
-	}, "admin")
+	}, "adminPassword")
 	app.SignUp(&core.User{
 		FirstName: "teacher",
 		LastName:  "teacher",
 		Email:     "teacher@email.com",
 		Role:      core.Teacher,
 		Courses:   []string{},
-	}, "teacher")
+	}, "teacherPassword")
 	app.SignUp(&core.User{
 		FirstName: "student",
 		LastName:  "student",
 		Email:     "student@email.com",
 		Role:      core.Student,
 		Courses:   []string{},
-	}, "student")
+	}, "studentPassword")
 }
 
 func SetupRouter() {
