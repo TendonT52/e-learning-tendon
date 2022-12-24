@@ -3,8 +3,8 @@ info:
     title: Tendon API
     version: "1.0"
 servers:
-    - url: http://146.190.122.208:8080/api/v1
-    # - url: https://localhost:8080/api/va
+    # - url: http://146.190.122.208:8080/api/v1
+    - url: "http://localhost:8080/api/v1"
 components:
     securitySchemes:
         bearerAuth:
@@ -94,6 +94,12 @@ components:
                 updateAt:
                     type: string
                     example: 2022-12-23T14:45:31.495Z
+                nodes :
+                    type: array
+                    items: 
+                        type: string
+                    example:
+                        ["6303306a448342f4bb47fb2e", "6303306a448342f4bb47fb20"]
                 nextLesson:
                     type: array
                     items:
@@ -157,6 +163,9 @@ components:
                     schema:
                         type: object
                     examples:
+                        fieldNotExit:
+                            value:
+                                message: some field not exit
                         emailAlreadyUse:
                             value:
                                 massage: this email is already use
@@ -333,8 +342,6 @@ paths:
 
     /user/sign-in:
         post:
-            # security:
-            #     - bearerAuth: []
             requestBody:
                 content:
                     application/json:
@@ -426,8 +433,10 @@ paths:
                 "401":
                     $ref: "#/components/responses/unauthorizedError"
 
-    /courses/{id}:
+    /auth/courses/{id}:
         get:
+            security:
+                - bearerAuth: []
             parameters:
                 - name: id
                   in: path
@@ -446,6 +455,8 @@ paths:
                 "404":
                     $ref: "#/components/responses/notFoundError"
         patch:
+            security:
+                - bearerAuth: []
             parameters:
                 - name: id
                   in: path
@@ -471,10 +482,7 @@ paths:
                                         - inviteOnly
                                         - private
                                 createBy:
-                                    type: array
-                                    items:
-                                        type: string
-                                        example: learningNodeID
+                                    type: string
                                 lessons:
                                     type: array
                                     items:
@@ -490,6 +498,8 @@ paths:
                 "404":
                     $ref: "#/components/responses/notFoundError"
         delete:
+            security:
+                - bearerAuth: []
             parameters:
                 - name: id
                   in: path
@@ -504,8 +514,10 @@ paths:
                 "404":
                     $ref: "#/components/responses/notFoundError"
 
-    /courses:
+    /auth/courses:
         post:
+            security:
+                - bearerAuth: []
             requestBody:
                 content:
                     application/json:
@@ -531,9 +543,17 @@ paths:
             responses:
                 "200":
                     description: Everything went fine
+                "400":
+                    $ref: "#/components/responses/inputError"
+                "401":
+                    $ref: "#/components/responses/unauthorizedError"
+                "404":
+                    $ref: "#/components/responses/notFoundError"
 
-    /lessons/{id}:
+    /auth/lessons/{id}:
         get:
+            security:
+                - bearerAuth: []
             parameters:
                 - name: id
                   in: path
@@ -547,7 +567,15 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/lesson"
+                "400":
+                    $ref: "#/components/responses/inputError"
+                "401":
+                    $ref: "#/components/responses/unauthorizedError"
+                "404":
+                    $ref: "#/components/responses/notFoundError"
         patch:
+            security:
+                - bearerAuth: []
             parameters:
                 - name: id
                   in: path
@@ -560,46 +588,38 @@ paths:
                         schema:
                             type: object
                             properties:
-                                learningNodeName:
+                                name:
                                     type: string
-                                learningNodeDescription:
+                                description:
                                     type: string
-                                addCurriculums:
+                                access:
+                                    type: string
+                                createBy:
+                                    type: string
+                                nodes:
                                     type: array
                                     items:
                                         type: string
-                                deleteCurriculums:
+                                nextLesson:
                                     type: array
                                     items:
                                         type: string
-                                addSubNode:
-                                    type: array
-                                    items:
-                                        type: string
-                                deleteSubNode:
-                                    type: array
-                                    items:
-                                        type: string
-                                addNextLearningNodeId:
-                                    type: array
-                                    items:
-                                        type: string
-                                delNextLearningNodeId:
-                                    type: array
-                                    items:
-                                        type: string
-                                addPreviousLearningNodeId:
-                                    type: array
-                                    items:
-                                        type: string
-                                delPreviousLearningNodeId:
+                                prevLesson:
                                     type: array
                                     items:
                                         type: string
             responses:
                 "200":
                     description: success
+                "400":
+                    $ref: "#/components/responses/inputError"
+                "401":
+                    $ref: "#/components/responses/unauthorizedError"
+                "404":
+                    $ref: "#/components/responses/notFoundError"
         delete:
+            security:
+                - bearerAuth: []
             parameters:
                 - name: id
                   in: path
@@ -609,40 +629,54 @@ paths:
             responses:
                 "200":
                     description: success
-    /api/learning-nodes:
+                "401":
+                    $ref: "#/components/responses/unauthorizedError"
+                "404":
+                    $ref: "#/components/responses/notFoundError"
+    /auth/lessons:
         post:
+            security:
+                - bearerAuth: []
             requestBody:
                 content:
                     application/json:
                         schema:
                             type: object
                             properties:
-                                learningNodeName:
+                                name:
                                     type: string
-                                learningNodeDescription:
+                                description:
                                     type: string
-                                curriculums:
+                                access:
+                                    type: string
+                                createBy:
+                                    type: string
+                                nodes:
                                     type: array
                                     items:
                                         type: string
-                                subNode:
+                                nextLesson:
                                     type: array
                                     items:
                                         type: string
-                                nextLearningNodeId:
-                                    type: array
-                                    items:
-                                        type: string
-                                previousLearningNodeId:
+                                prevLesson:
                                     type: array
                                     items:
                                         type: string
             responses:
                 "200":
                     description: Everything went fine
+                "400":
+                    $ref: "#/components/responses/inputError"
+                "401":
+                    $ref: "#/components/responses/unauthorizedError"
+                "404":
+                    $ref: "#/components/responses/notFoundError"
 
-    /api/nodes/{id}:
-        delete:
+    /auth/nodes/{id}:
+        get:
+            security:
+                - bearerAuth: []
             parameters:
                 - name: id
                   in: path
@@ -652,9 +686,25 @@ paths:
             responses:
                 "200":
                     description: success
-
-    /api/nodes:
-        post:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/node"
+                "400":
+                    $ref: "#/components/responses/inputError"
+                "401":
+                    $ref: "#/components/responses/unauthorizedError"
+                "404":
+                    $ref: "#/components/responses/notFoundError"
+        patch:
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: string
             requestBody:
                 content:
                     application/json:
@@ -663,24 +713,57 @@ paths:
                             properties:
                                 type:
                                     type: string
-                                    enum:
-                                        - pdfNode
-                                        - videoNode
-                                        - textNode
-                                        - soundNode
-                                        - imageNode
-                                attributes:
-                                    type: object
-                                    properties:
-                                        priority:
-                                            type: string
-                                            enum:
-                                                - require
-                                                - extension
-                                                - optional
+                                data:
+                                    type: string
+            responses:
+                "200":
+                    description: success
+                "400":
+                    $ref: "#/components/responses/inputError"
+                "401":
+                    $ref: "#/components/responses/unauthorizedError"
+                "404":
+                    $ref: "#/components/responses/notFoundError"
+        delete:
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: success
+                "401":
+                    $ref: "#/components/responses/unauthorizedError"
+                "404":
+                    $ref: "#/components/responses/notFoundError"
+
+    /auth/nodes:
+        post:
+            security:
+                - bearerAuth: []
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                type:
+                                    type: string
+                                data:
+                                    type: string
             responses:
                 "200":
                     description: Everything went fine
+                "400":
+                    $ref: "#/components/responses/inputError"
+                "401":
+                    $ref: "#/components/responses/unauthorizedError"
+                "404":
+                    $ref: "#/components/responses/notFoundError"
 
     # /resources/video/{id}:
     #     get:

@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"log"
+
 	"github.com/TendonT52/e-learning-tendon/internal/app"
 	"github.com/TendonT52/e-learning-tendon/internal/core"
 	"github.com/gin-gonic/gin"
@@ -80,5 +82,6 @@ func SetupRouter() {
 }
 
 func StartServer() {
+	log.Println("Server is running on port", config.Port)
 	Router.Run(config.Port)
 }

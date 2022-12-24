@@ -11,6 +11,15 @@ import (
 
 func HaveAccessToken(ctx *gin.Context) {
 	accessToken := ctx.GetHeader("Authorization")
+	if len(accessToken) <= 7 {
+		ctx.AbortWithStatusJSON(
+			http.StatusUnauthorized,
+			gin.H{
+				"message": "unauthorized",
+			},
+		)
+		return
+	}
 	accessToken = fmt.Sprint(accessToken[7:])
 	claim, err := app.ValidateToken(accessToken)
 	if err != nil {

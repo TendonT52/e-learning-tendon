@@ -23,7 +23,10 @@ func init() {
 }
 
 func TranslateError(err error) map[string]string {
-	validatorErrs := err.(validator.ValidationErrors)
+	validatorErrs, ok := err.(validator.ValidationErrors)
+	if !ok {
+		return map[string]string{"some field": "in wrong format"}
+	}
 	m := validatorErrs.Translate(trans)
 	return m
 }
