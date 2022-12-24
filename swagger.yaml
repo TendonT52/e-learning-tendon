@@ -9,7 +9,7 @@ info:
         \    email: student@email.com password: studentPassword <br> \
         \ test the authorization filters."
 servers:
-    - url: http://146.190.122.208:8080/api/v1
+    - url: http://24.199.72.217:8080/api/v1
     # - url: "http://localhost:8080/api/v1"
 components:
     securitySchemes:
