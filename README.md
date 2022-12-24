@@ -16,7 +16,7 @@ This is part of an e-learning project. That I work with my friend to build an e-
 ## Try API without any installation by swagger UI : [click](http://24.199.72.217)
 ![Screenshot](img/Screenshot3.png)
 
-## if you want to run it on your machine
+## If you want to run it on your machine
 - create a config.yaml file(you can see config_test.yaml for example)
 - run docker compose
 
